@@ -22,5 +22,5 @@ jobs:
       - name: Install Requirements
         run: pip install .[dev]
 
-      - name: Lint Code
+      - name: Test Code
         run: pytest signwriting_transcription
