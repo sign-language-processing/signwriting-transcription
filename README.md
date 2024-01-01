@@ -25,3 +25,58 @@ For this study, there are two notable lexicons, containing isolated sign languag
 - [SignSuisse](https://signsuisse.sgb-fss.ch/) is a Swiss Signed Languages Lexicon that covers Swiss-German Sign Language (DSGS), French Sign Language (LSF), and Italian Sign Language (LIS). The lexicon includes approximately 4,500 LSF videos with [SignWriting transcriptions in SignBank](https://www.signbank.org/signpuddle2.0/index.php?ui=4&sgn=49).
 
 (can also add around 2300 videos from the Vokabeltrainer)
+
+
+## Installation
+
+Clone the repository:
+```
+git clone https://github.com/[your-username]/joeyP2S.git
+```
+Install required libraries:
+```
+pip install -r requirements.txt
+```
+
+
+## Data Preparation
+
+Download the pose-sign language dataset from the provided link:
+```
+python data_preparation/download_script.py "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media" "/content/transcription.zip"
+```
+Unzip the downloaded dataset:
+```
+unzip transcription.zip -d DataSet
+```
+Preprocess the data using the provided script:
+```
+python data_preparation/data_preprocessing.py --srcDir /content/DataSet --trgDir /content/NormData
+```
+Prepare the data for JoeyNMT using the provided script:
+```
+python data_preparation/prepare_poses.py --data_root /content/output --dataset_root /content/DataSet --dataset_name poses --tokenizer_type pose-bpe
+```
+
+## Training
+
+Create a configuration file for training (example provided in config.yaml).
+
+Start the training process:
+
+```
+python training/train.py /content/output/poses/config.yaml
+```
+
+
+## Tensorboard Visualization
+
+Launch TensorBoard to visualize training progress:
+```
+tensorboard --logdir /content/models/poses/tensorboard
+```
+
+
+## License
+
+This project is licensed under the MIT License.
