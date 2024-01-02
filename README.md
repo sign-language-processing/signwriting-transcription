@@ -31,19 +31,23 @@ For this study, there are two notable lexicons, containing isolated sign languag
 
 Clone the repository:
 ```
-git clone https://github.com/[your-username]/joeyP2S.git
+git clone https://github.com/sign-language-processing/signwriting-transcription.git
 ```
-Install required libraries:
+Install poetry (if not already installed):
 ```
-pip install -r requirements.txt
+pip install poetry
+```
+Installing dependencies using pyproject.toml
+```
+poetry install
 ```
 
 
 ## Data Preparation
 
-Download the pose-sign language dataset from the provided link:
+Download the pose-sign language dataset from the using this commend:
 ```
-python data_preparation/download_script.py "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media" "/content/transcription.zip"
+!wget -O transcription.zip "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media"
 ```
 Unzip the downloaded dataset:
 ```
