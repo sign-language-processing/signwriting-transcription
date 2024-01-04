@@ -33,13 +33,13 @@ Clone the repository:
 ```
 git clone https://github.com/sign-language-processing/signwriting-transcription.git
 ```
-Install poetry (if not already installed):
+change your working directory to signwriting-transcription
 ```
-pip install poetry
+cd signwriting-transcription
 ```
-Installing dependencies using pyproject.toml
+install dependencies using pyproject.toml (make sure that you have pip installed)
 ```
-poetry install
+pip install .
 ```
 
 
@@ -64,8 +64,11 @@ python data_preparation/prepare_poses.py --data_root /content/output --dataset_r
 
 ## Training
 
-Create a configuration file for training (example provided in config.yaml).
+Create your own configuration file for training or use the config.py for generate it with defult setting
 
+```
+python data_preparation/config.py --data-path [input your data path] --experiment-dir [input your experiment dir]
+```
 Start the training process:
 
 ```
