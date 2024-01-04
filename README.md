@@ -12,10 +12,8 @@ The preprocessing step involves altering the data by normalizing the video poses
 We have tailored the vocabulary file to accommodate the distinct symbols and gestures associated with SignWriting. This adjustment ensures that the NMT model can effectively learn and generate SignWriting representations during the training process.
 
 * Evaluation Method Enhancement:
-The evaluation method for assessing the performance of the NMT model has been customized to align with the intricacies of translating human poses to SignWriting. This involves creating specialized metrics and criteria to measure the accuracy and fluency of the generated SignWriting sequences. more information is specified in the signwriting-evaluation repository.
+The evaluation method for assessing the performance of the NMT model has been customized to align with the intricacies of translating human poses to SignWriting. This involves creating specialized metrics and criteria to measure the accuracy and fluency of the generated SignWriting sequences. More information is specified in the signwriting-evaluation repository.
 
-* Training Data Transformation:
-Prior to feeding data into the JoeyNMT architecture, a preprocessing step is introduced to convert human poses into a format suitable for neural network processing. Additionally, we have normalized the input data to enhance the model's ability to generalize across diverse pose variations. The dataset is then divided into three sets: training, validation, and test, each with its corresponding TSV file.
 
 
 ### Examples
