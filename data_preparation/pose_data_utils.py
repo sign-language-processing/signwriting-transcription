@@ -27,7 +27,7 @@ from joeynmt.constants import (
     UNK_TOKEN,
 )
 from joeynmt.helpers_for_audio import _is_npy_data
-from tokenizer.signwriting_tokenizer import SignWritingTokenizer
+from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 
 
@@ -70,16 +70,6 @@ def save_tsv(df: pd.DataFrame, path: Path, header: bool = True) -> None:
               encoding="utf-8",
               escapechar="\\",
               quoting=csv.QUOTE_NONE)
-
-
-def load_tsv(path: Path):
-    return pd.read_csv(path.as_posix(),
-                       sep="\t",
-                       header=0,
-                       encoding="utf-8",
-                       escapechar="\\",
-                       quoting=csv.QUOTE_NONE,
-                       na_filter=False)
 
 
 def build_pose_vocab(path):

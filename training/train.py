@@ -2,13 +2,18 @@
 """
 Training module
 """
-import argparse
-import logging
-import shutil
-
-from pathlib import Path
 
 from pose_data import load_pose_data
+
+import argparse
+import logging
+import math
+import shutil
+import time
+from pathlib import Path
+
+from torch.utils.data import Dataset
+
 from joeynmt.helpers import (
     check_version,
     load_config,
@@ -16,12 +21,108 @@ from joeynmt.helpers import (
     make_logger,
     make_model_dir,
     set_seed,
+    store_attention_plots,
+    write_list_to_file,
 )
-from joeynmt.model import build_model
-from joeynmt.prediction import test
+from joeynmt.model import Model, build_model
+from prediction import predict, test
 from joeynmt.training import TrainManager
-
 logger = logging.getLogger(__name__)
+
+
+class PoseTrainManager(TrainManager):
+    def __init__(self, model: Model, cfg: dict) -> None:
+        super().__init__(model, cfg)
+        if not cfg['training'].get('early_stopping_metric', None):
+            self.early_stopping_metric = 'fsw_eval'
+
+    def _validate(self, valid_data: Dataset):
+        if valid_data.random_subset > 0:  # subsample validation set each valid step
+            try:
+                valid_data.reset_random_subset()
+                valid_data.sample_random_subset(seed=self.stats.steps)
+                logger.info(
+                    "Sample random subset from dev set: n=%d, seed=%d",
+                    len(valid_data),
+                    self.stats.steps,
+                )
+            except AssertionError as e:
+                logger.warning(e)
+
+        valid_start_time = time.time()
+        (
+            valid_scores,
+            valid_references,
+            valid_hypotheses,
+            valid_hypotheses_raw,
+            valid_sequence_scores,  # pylint: disable=unused-variable
+            valid_attention_scores,
+        ) = predict(
+            model=self.model,
+            data=valid_data,
+            compute_loss=True,
+            device=self.device,
+            n_gpu=self.n_gpu,
+            normalization=self.normalization,
+            cfg=self.valid_cfg,
+            fp16=self.fp16,
+        )
+        valid_duration = time.time() - valid_start_time
+
+        # for eval_metric in ['loss', 'ppl', 'acc'] + self.eval_metrics:
+        for eval_metric, score in valid_scores.items():
+            if not math.isnan(score):
+                self.tb_writer.add_scalar(f"valid/{eval_metric}", score,
+                                          self.stats.steps)
+
+        ckpt_score = valid_scores[self.early_stopping_metric]
+
+        if self.scheduler_step_at == "validation":
+            self.scheduler.step(metrics=ckpt_score)
+
+        # update new best
+        new_best = self.stats.is_best(ckpt_score)
+        if new_best:
+            self.stats.best_ckpt_score = ckpt_score
+            self.stats.best_ckpt_iter = self.stats.steps
+            logger.info(
+                "Hooray! New best validation result [%s]!",
+                self.early_stopping_metric,
+            )
+
+        # save checkpoints
+        is_better = (self.stats.is_better(ckpt_score, self.ckpt_queue)
+                     if len(self.ckpt_queue) > 0 else True)
+        if self.num_ckpts < 0 or is_better:
+            self._save_checkpoint(new_best, ckpt_score)
+
+        # append to validation report
+        self._add_report(valid_scores=valid_scores, new_best=new_best)
+
+        self._log_examples(
+            references=valid_references,
+            hypotheses=valid_hypotheses,
+            hypotheses_raw=valid_hypotheses_raw,
+            data=valid_data,
+        )
+
+        # store validation set outputs
+        write_list_to_file(self.model_dir / f"{self.stats.steps}.hyps",
+                           valid_hypotheses)
+
+        # store attention plots for selected valid sentences
+        if valid_attention_scores:
+            store_attention_plots(
+                attentions=valid_attention_scores,
+                targets=valid_hypotheses_raw,
+                sources=valid_data.get_list(lang=valid_data.src_lang, tokenized=True),
+                indices=self.log_valid_sents,
+                output_prefix=(self.model_dir / f"att.{self.stats.steps}").as_posix(),
+                tb_writer=self.tb_writer,
+                steps=self.stats.steps,
+            )
+
+        return valid_duration
 
 
 def train(cfg_file: str, skip_test: bool = False) -> None:
@@ -70,7 +171,7 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
     model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab)
 
     # for training management, e.g. early stopping and model selection
-    trainer = TrainManager(model=model, cfg=cfg)
+    trainer = PoseTrainManager(model=model, cfg=cfg)
 
     # train the model
     trainer.train_and_validate(train_data=train_data, valid_data=dev_data)
@@ -98,7 +199,7 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
         logger.info("Skipping test after training.")
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser("Joey-NMT")
     parser.add_argument(
         "config",
@@ -108,3 +209,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     train(cfg_file=args.config)
+
+
+if __name__ == "__main__":
+    main()

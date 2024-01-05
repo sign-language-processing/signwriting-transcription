@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Union
 
-from tokenizer.signwriting_tokenizer import SignWritingTokenizer
+from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 from joeynmt.helpers import (
     ConfigurationError,

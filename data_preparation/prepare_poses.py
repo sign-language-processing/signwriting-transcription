@@ -21,8 +21,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from poseData_utils import build_sp_model, create_zip, get_zip_manifest, save_tsv, build_pose_vocab
-from datasets_pose import load_dataset, extract_to_fbank
+from pose_data_utils import build_sp_model, create_zip, get_zip_manifest, save_tsv, build_pose_vocab
+from datasets_pose import load_dataset, extract_to_matrix
 
 from joeynmt.helpers import write_list_to_file
 
@@ -45,15 +45,15 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
     feature_root.mkdir(parents=True, exist_ok=True)
 
     # Extract features
-    print(f"Create OpenSLR {name} dataset.")
+    print(f"Create pose {name} dataset.")
 
     print("Fetching train split ...")
     dataset = load_dataset(dataset_root)
 
-    print("Extracting log mel filter bank features ...")
+    print("Extracting pose features ...")
     for instance in dataset:
         utt_id = instance[0]
-        extract_to_fbank(instance[1], feature_root / f'{utt_id}.npy', overwrite=False)
+        extract_to_matrix(instance[1], feature_root / f'{utt_id}.npy', overwrite=False)
 
     # Pack features into ZIP
     print("ZIPing features...")
@@ -128,10 +128,10 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_root", "-d", required=True, type=str)
-    parser.add_argument("--dataset_root", required=True, type=str)
-    parser.add_argument("--dataset_name", required=True, type=str)
-    parser.add_argument("--tokenizer_type", required=True, type=str)
+    parser.add_argument("--data-root", "-d", required=True, type=str)
+    parser.add_argument("--dataset-root", required=True, type=str)
+    parser.add_argument("--dataset-name", required=True, type=str)
+    parser.add_argument("--tokenizer-type", required=True, type=str)
     args = parser.parse_args()
 
     process(args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, pumping=True)

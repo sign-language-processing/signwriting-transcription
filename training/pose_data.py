@@ -4,43 +4,13 @@ Data module
 """
 import logging
 from functools import partial
-from typing import Optional, Tuple, List
-from swu_tokenizer import SwuTokenizer
+from typing import Optional, Tuple
 from joeynmt.datasets import BaseDataset, build_dataset
 from joeynmt.helpers_for_audio import pad_features
 from swu_tokenizer import build_tokenizer
 from joeynmt.vocabulary import Vocabulary, build_vocab
-from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN
 
 logger = logging.getLogger(__name__)
-
-
-def id_to_number(sentences: List[List[str]],
-                 bos: bool = True, bos_index: int = None, eos: bool = True, eos_index: int = None, pad_index:int = None, tokenizer:SwuTokenizer = None ) -> Tuple[List[List[int]], List[int]]:
-    """
-    Convert a list of sentences (words) to a list of sentences (numbers)
-    :param tokenizer:
-    :param sentences: list of sentences (words)
-    :return:  - list of sentences (numbers) with padding
-              - original lengths before padding
-    """
-    sentences = [[tokenizer.tokenizer.s2i[tokns] for tokns in sent] for sent in sentences]
-    max_len = max([len(sent) for sent in sentences])
-    if bos:
-        max_len += 1
-    if eos:
-        max_len += 1
-    padded, lengths = [], []
-    for sent in sentences:
-        encoded = sent
-        if bos:
-            encoded = [bos_index] + encoded
-        if eos:
-            encoded = encoded + [eos_index]
-        offset = max(0, max_len - len(encoded))
-        padded.append(encoded + [pad_index] * offset)
-        lengths.append(len(encoded))
-    return padded, lengths
 
 
 def load_pose_data(
@@ -91,17 +61,8 @@ Optional[BaseDataset]]:
     # build tokenizer
     logger.info("Building tokenizer...")
     tokenizer = build_tokenizer(data_cfg)
-    bos_index = None
-    eos_index = None
-    pad_index = None
-    if isinstance(tokenizer['trg'], SwuTokenizer):
-        bos_index = tokenizer['trg'].sign2id(BOS_TOKEN)
-        eos_index = tokenizer['trg'].sign2id(EOS_TOKEN)
-        pad_index = tokenizer['trg'].sign2id(PAD_TOKEN)
 
     dataset_type = data_cfg.get("dataset_type", "plain").lower()
-    if task == "S2T":
-        assert dataset_type == "speech"
     dataset_cfg = data_cfg.get("dataset_cfg", {})
 
     # train data
@@ -147,7 +108,6 @@ Optional[BaseDataset]]:
     elif task == "S2T":
         sequence_encoder = {
             "src": partial(pad_features, embed_size=tokenizer["src"].num_freq),
-            # "trg": partial(id_to_number, bos=True, bos_index=bos_index, eos=True, eos_index=eos_index, pad_index=pad_index, tokenizer=tokenizer["trg"]),
             "trg": partial(trg_vocab.sentences_to_ids, bos=True, eos=True),
         }
     if train_data is not None:
