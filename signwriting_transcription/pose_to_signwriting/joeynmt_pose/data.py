@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-Data module
+Data module. Copy of https://github.com/may-/joeys2t/blob/main/joeynmt/data.py with minor modifications.
 """
 import logging
 from functools import partial

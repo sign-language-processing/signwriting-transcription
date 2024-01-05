@@ -11,10 +11,10 @@ readme = "README.md"
 dependencies = [
     "pose-format",
     "tqdm",
-    "joeynmt @ git+https://github.com/may-/joeys2t",
-    "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "mediapipe",
-    "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation.git"
+    "joeynmt @ git+https://github.com/may-/joeys2t", # TODO: check if normal joeynmt also works
+    "signwriting @ git+https://github.com/sign-language-processing/signwriting",
+    "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation"
 ]
 
 [project.optional-dependencies]
@@ -33,3 +33,12 @@ disable = [
     "C0114", # Missing module docstring
     "C0116", # Missing function or method docstring
 ]
+
+[tool.setuptools]
+packages = [
+    "signwriting_transcription"
+]
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = ["signwriting_transcription"]

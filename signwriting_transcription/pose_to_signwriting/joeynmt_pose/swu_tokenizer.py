@@ -121,7 +121,7 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
                 min_length=cfg.get("min_length", -1),
                 **tokenizer_cfg,
             )
-        elif tokenizer_type == "pose-bpe":
+        elif tokenizer_type == "pose-bpe": # TODO rename tokenizer, since it is not BPE
             tokenizer = SwuTokenizer(
                 level=cfg["level"],
                 lowercase=cfg.get("lowercase", False),

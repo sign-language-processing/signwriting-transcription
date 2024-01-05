@@ -28,7 +28,6 @@ from joeynmt.constants import (
 )
 from joeynmt.helpers_for_audio import _is_npy_data
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
-from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 
 
 def get_zip_manifest(zip_path: Path, npy_root: Optional[Path] = None):

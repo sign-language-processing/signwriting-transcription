@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Prepare popses
+Prepare poses
 
 expected dir structure:
     Output/  # <- point here in --data_root in argument
@@ -33,7 +33,7 @@ N_MEL_FILTERS = 534
 N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
-EXPENDED_DATASET = 100  # the minimum number of samples in the dataset
+EXPANDED_DATASET = 100  # the minimum number of samples in the dataset
 
 
 def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False):
@@ -76,10 +76,10 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
             "trg": instance[2]
         })
 
-    if EXPENDED_DATASET > len(all_data) and pumping:
+    if EXPANDED_DATASET > len(all_data) and pumping:
         print("Pumping dataset...")
         Backup = all_data.copy()
-        for i in range(EXPENDED_DATASET - len(Backup)):
+        for i in range(EXPANDED_DATASET - len(Backup)):
             utt_id = Backup[i % len(Backup)]["id"]
             n_frames = Backup[i % len(Backup)]["n_frames"]
             trg = Backup[i % len(Backup)]["trg"]
@@ -98,6 +98,7 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
     np.random.seed(SEED)
     probs = np.random.rand(len(all_df))
     mask = {}
+    # TODO: make dev set of constant size, 100-200 should be fine, test the same
     mask['train'] = probs < 0.995
     mask['dev'] = (probs >= 0.995) & (probs < 0.998)
     mask['test'] = probs >= 0.998
@@ -139,4 +140,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    exit(0)

@@ -3,13 +3,14 @@ from pathlib import Path
 
 from pose_format import Pose
 from pose_format.utils.generic import pose_normalization_info, correct_wrists, reduce_holistic
+from tqdm import tqdm
 
 
 def preprocess(src_dir, trg_dir):
     src_dir = Path(src_dir)
     trg_dir = Path(trg_dir)
     trg_dir.mkdir(parents=True, exist_ok=True)
-    for path in src_dir.glob("*.pose"):
+    for path in tqdm(src_dir.glob("*.pose")):
         with open(src_dir / path.name, 'rb') as pose_file:
             pose = Pose.read(pose_file.read())
         pose = reduce_holistic(pose)

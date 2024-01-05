@@ -3,7 +3,6 @@
 This modules holds methods for generating predictions from a model.
 """
 
-from pose_data import load_pose_data
 import logging
 import math
 import sys
@@ -13,6 +12,7 @@ from itertools import zip_longest
 from pathlib import Path
 from typing import Dict, List, Tuple
 import argparse
+
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -40,6 +40,9 @@ from joeynmt.tokenizers import EvaluationTokenizer, build_tokenizer
 from joeynmt.vocabulary import build_vocab
 
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
+
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+
 logger = logging.getLogger(__name__)
 
 

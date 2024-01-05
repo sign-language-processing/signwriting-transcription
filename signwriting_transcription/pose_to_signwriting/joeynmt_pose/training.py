@@ -3,7 +3,7 @@
 Training module
 """
 
-from pose_data import load_pose_data
+from data import load_pose_data
 
 import argparse
 import logging
