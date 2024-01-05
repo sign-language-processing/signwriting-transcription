@@ -13,7 +13,8 @@ dependencies = [
     "tqdm",
     "joeynmt @ git+https://github.com/may-/joeys2t",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
-    "mediapipe"
+    "mediapipe",
+    "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation.git"
 ]
 
 [project.optional-dependencies]
