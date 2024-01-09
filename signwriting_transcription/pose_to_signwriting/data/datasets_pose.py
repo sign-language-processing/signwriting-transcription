@@ -4,34 +4,31 @@ import numpy as np
 from pose_format import Pose
 from signwriting.formats.swu_to_fsw import swu2fsw
 
-FRAME_RATE = 29.97003
 
-
-def fsw_cut(fswText: str) -> str:
-    match = re.search('[MRLB]', fswText)
+def fsw_cut(fsw_text: str) -> str:
+    match = re.search('[MRLB]', fsw_text)
     if match is not None:
-        return fswText[match.start():]
-    else:
-        return fswText
+        return fsw_text[match.start():]
+    return fsw_text
 
 
-def ms2frame(ms) -> int:
+def ms2frame(ms, frame_rate) -> int:
     ms = int(ms)
-    return int(ms / 1000 * FRAME_RATE)
+    return int(ms / 1000 * frame_rate)
 
 
 def pose_to_matrix(file_path, start_ms, end_ms):
     with open(file_path, "rb") as f:
         pose = Pose.read(f.read())
+    frame_rate = 29.97003 if file_path == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
     pose = pose.body.data
     pose = pose.reshape(len(pose), -1)
-    # TODO: use pose.body.fps except for one exception
-    pose = pose[ms2frame(start_ms):ms2frame(end_ms)]
+    pose = pose[ms2frame(start_ms, frame_rate):ms2frame(end_ms, frame_rate)]
     return pose
 
 
 def load_dataset(folder_name):
-    with open(f'{folder_name}/target.csv', 'r') as csvfile:
+    with open(f'{folder_name}/target.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
 
         dataset = []

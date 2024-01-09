@@ -3,14 +3,12 @@
 Training module
 """
 
-from data import load_pose_data
-
 import argparse
 import logging
 import math
+from pathlib import Path
 import shutil
 import time
-from pathlib import Path
 
 from torch.utils.data import Dataset
 
@@ -25,12 +23,18 @@ from joeynmt.helpers import (
     write_list_to_file,
 )
 from joeynmt.model import Model, build_model
-from prediction import predict, test
 from joeynmt.training import TrainManager
+
+from .data import load_pose_data
+from .prediction import predict, test
+
 logger = logging.getLogger(__name__)
 
 
 class PoseTrainManager(TrainManager):
+    """
+    Manages training and validation loss computation.
+    """
     def __init__(self, model: Model, cfg: dict) -> None:
         super().__init__(model, cfg)
         if not cfg['training'].get('early_stopping_metric', None):
@@ -141,7 +145,6 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
         overwrite=cfg["training"].get("overwrite", False),
     )
     pkg_version = make_logger(model_dir, mode="train")
-    # TODO: save version number in model checkpoints
     if "joeynmt_version" in cfg:
         check_version(pkg_version, cfg["joeynmt_version"])
 

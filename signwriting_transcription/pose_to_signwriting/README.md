@@ -77,7 +77,7 @@ python signwriting_transcription/pose_to_signwriting/data/prepare_poses.py \
 Create your own configuration file for training or use the config.py for generate it with default setting
 
 ```bash
-python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set --experiment-dir experiment
+python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set/poses --experiment-dir experiment
 ```
 
 Start the training process:

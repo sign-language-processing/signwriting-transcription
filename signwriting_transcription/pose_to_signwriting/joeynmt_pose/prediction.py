@@ -3,6 +3,7 @@
 This modules holds methods for generating predictions from a model.
 """
 
+import argparse
 import logging
 import math
 import sys
@@ -11,7 +12,6 @@ from functools import partial
 from itertools import zip_longest
 from pathlib import Path
 from typing import Dict, List, Tuple
-import argparse
 
 import numpy as np
 import torch
@@ -41,7 +41,8 @@ from joeynmt.vocabulary import build_vocab
 
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
 
-from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+from .data import load_pose_data
+
 
 logger = logging.getLogger(__name__)
 
@@ -236,8 +237,6 @@ def predict(
     # decode ids back to str symbols (cut-off AFTER eos; eos itself is included.)
     decoded_valid, valid_sequence_scores = model.trg_vocab.arrays_to_sentences(
         arrays=all_outputs, score_arrays=valid_sequence_scores, cut_at_eos=True)
-    # TODO: `valid_sequence_scores` should have the same seq length as `decoded_valid`
-    #     -> needed to be cut-off at eos synchronously
 
     if return_prob == "ref":  # no evaluation needed
         logger.info(

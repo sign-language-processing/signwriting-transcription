@@ -8,21 +8,30 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Union
 
-from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
-from joeynmt.helpers import (
-    ConfigurationError,
+from joeynmt.helpers import ConfigurationError
+from joeynmt.tokenizers import (
+    BasicTokenizer,
+    SentencePieceTokenizer,
+    SubwordNMTTokenizer,
+    FastBPETokenizer,
+    SpeechProcessor
 )
+from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 
 logger = logging.getLogger(__name__)
-from joeynmt.tokenizers import BasicTokenizer, SentencePieceTokenizer, SubwordNMTTokenizer, FastBPETokenizer, \
-    SpeechProcessor
 
 
 class SwuTokenizer(BasicTokenizer):
+    """
+    Tokenizer for the SWU (SignWriting Unicode) language.
+
+    This tokenizer is derived from BasicTokenizer and customized for SWU.
+    It provides functionality to tokenize SWU text.
+    """
     def __init__(
             self,
-            level: str = "bpe",
+            level: str = "vpf",
             lowercase: bool = False,
             normalize: bool = False,
             max_length: int = -1,
@@ -30,7 +39,7 @@ class SwuTokenizer(BasicTokenizer):
             **kwargs,
     ):
         super().__init__(level, lowercase, normalize, max_length, min_length, **kwargs)
-        assert self.level == "bpe"
+        assert self.level == "vpf"
         kwargs = {'init_token': BOS_TOKEN,
                   'eos_token': EOS_TOKEN,
                   'pad_token': PAD_TOKEN,
@@ -89,6 +98,15 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
             min_length=cfg.get("min_length", -1),
             **tokenizer_cfg,
         )
+    elif cfg["level"] == "vpf":
+        tokenizer = SwuTokenizer(
+            level=cfg["level"],
+            lowercase=cfg.get("lowercase", False),
+            normalize=cfg.get("normalize", False),
+            max_length=cfg.get("max_length", -1),
+            min_length=cfg.get("min_length", -1),
+            **tokenizer_cfg,
+        )
     elif cfg["level"] == "bpe":
         tokenizer_type = cfg.get("tokenizer_type", cfg.get("bpe_type", "sentencepiece"))
         if tokenizer_type == "sentencepiece":
@@ -114,15 +132,6 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
         elif tokenizer_type == "fastbpe":
             assert "codes" in tokenizer_cfg
             tokenizer = FastBPETokenizer(
-                level=cfg["level"],
-                lowercase=cfg.get("lowercase", False),
-                normalize=cfg.get("normalize", False),
-                max_length=cfg.get("max_length", -1),
-                min_length=cfg.get("min_length", -1),
-                **tokenizer_cfg,
-            )
-        elif tokenizer_type == "pose-bpe": # TODO rename tokenizer, since it is not BPE
-            tokenizer = SwuTokenizer(
                 level=cfg["level"],
                 lowercase=cfg.get("lowercase", False),
                 normalize=cfg.get("normalize", False),

@@ -4,8 +4,8 @@
 Prepare poses
 
 expected dir structure:
-    Output/  # <- point here in --data_root in argument
-    └── Poses/
+    vectorized_data_set/
+    └── poses/
             ├── fbank534/
             │   ├── test1.npy
             │   ├── test2.npy
@@ -21,10 +21,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from pose_data_utils import build_sp_model, create_zip, get_zip_manifest, save_tsv, build_pose_vocab
-from datasets_pose import load_dataset, extract_to_matrix
 
 from joeynmt.helpers import write_list_to_file
+from .pose_data_utils import (
+    build_sp_model,
+    create_zip,
+    get_zip_manifest,
+    save_tsv,
+    build_pose_vocab
+)
+from .datasets_pose import load_dataset, extract_to_matrix
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
 
@@ -33,12 +39,14 @@ N_MEL_FILTERS = 534
 N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
-EXPANDED_DATASET = 100  # the minimum number of samples in the dataset
+EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
 
 
-def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False):
-    root = Path(data_root).absolute()
-    cur_root = root / name
+def process(args, pumping: bool = False):
+    dataset_root, data_root, name, tokenizer_type = (
+        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type,)
+    cur_root = Path(data_root).absolute()
+    cur_root = cur_root / name
 
     # dir for filterbank (shared across splits)
     feature_root = cur_root / f"fbank{N_MEL_FILTERS}"
@@ -78,12 +86,12 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
 
     if EXPANDED_DATASET > len(all_data) and pumping:
         print("Pumping dataset...")
-        Backup = all_data.copy()
-        for i in range(EXPANDED_DATASET - len(Backup)):
-            utt_id = Backup[i % len(Backup)]["id"]
-            n_frames = Backup[i % len(Backup)]["n_frames"]
-            trg = Backup[i % len(Backup)]["trg"]
-            src = Backup[i % len(Backup)]["src"]
+        backup = all_data.copy()
+        for i in range(EXPANDED_DATASET - len(backup)):
+            utt_id = backup[i % len(backup)]["id"]
+            n_frames = backup[i % len(backup)]["n_frames"]
+            trg = backup[i % len(backup)]["trg"]
+            src = backup[i % len(backup)]["src"]
             all_data.append({
                 "id": f'{utt_id}({i})',  # unique id
                 "src": src,
@@ -98,10 +106,11 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
     np.random.seed(SEED)
     probs = np.random.rand(len(all_df))
     mask = {}
-    # TODO: make dev set of constant size, 100-200 should be fine, test the same
-    mask['train'] = probs < 0.995
-    mask['dev'] = (probs >= 0.995) & (probs < 0.998)
-    mask['test'] = probs >= 0.998
+    dev_range = np.partition(probs, 300 - 1)[300 - 1]
+    test_range = np.partition(probs, 150 - 1)[150 - 1]
+    mask['train'] = probs > dev_range
+    mask['dev'] = (probs <= dev_range) & (probs > test_range)
+    mask['test'] = probs <= test_range
 
     for split in ['train', 'dev', 'test']:
         split_df = all_df[mask[split]]
@@ -119,12 +128,11 @@ def process(dataset_root, data_root, name, tokenizer_type, pumping: bool = False
         'character_coverage': 1.0,
         'num_workers': N_WORKERS
     }
-    if tokenizer_type == 'pose-bpe':
+    if tokenizer_type == 'pose-vpf':
         build_pose_vocab(cur_root / f"spm_bpe{VOCAB_SIZE}.vocab")
     else:
         build_sp_model(cur_root / "train.txt", cur_root / f"spm_bpe{VOCAB_SIZE}", **kwargs)
     print("Done!")
-    exit(0)
 
 
 def main():
@@ -134,8 +142,7 @@ def main():
     parser.add_argument("--dataset-name", required=True, type=str)
     parser.add_argument("--tokenizer-type", required=True, type=str)
     args = parser.parse_args()
-
-    process(args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, pumping=True)
+    process(args, pumping=True)
 
 
 if __name__ == "__main__":

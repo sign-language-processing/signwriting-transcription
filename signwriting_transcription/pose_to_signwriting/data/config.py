@@ -39,9 +39,9 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             lang: "en_ng"
             max_length: 100
             lowercase: False
-            level: "bpe"                # Here we specify we're working on BPEs.
+            level: "vpf"                # Here we specify we're working on BPEs.
             voc_file: "{data_dir}/spm_bpe1182.vocab"
-            tokenizer_type: "pose-bpe"
+            tokenizer_type: "pose-vpf"
             tokenizer_cfg: 
                 model_file: "{data_dir}/spm_bpe1182.model"
                 pretokenize: "none"

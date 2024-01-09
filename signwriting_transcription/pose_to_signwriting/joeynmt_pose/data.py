@@ -2,13 +2,15 @@
 """
 Data module. Copy of https://github.com/may-/joeys2t/blob/main/joeynmt/data.py with minor modifications.
 """
-import logging
 from functools import partial
 from typing import Optional, Tuple
+
+import logging
 from joeynmt.datasets import BaseDataset, build_dataset
 from joeynmt.helpers_for_audio import pad_features
-from swu_tokenizer import build_tokenizer
 from joeynmt.vocabulary import Vocabulary, build_vocab
+from .swu_tokenizer import build_tokenizer
+
 
 logger = logging.getLogger(__name__)
 

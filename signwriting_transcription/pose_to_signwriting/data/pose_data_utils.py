@@ -57,8 +57,8 @@ def create_zip(data_root: Path, zip_path: Path):
         for path in tqdm(paths):
             try:
                 f.write(path, arcname=path.name)
-            except Exception as e:  # pylint: disable=broad-except
-                raise Exception(f"{path}") from e
+            except (IOError, OSError) as e:  # pylint: disable=broad-except
+                raise IOError(f"{path}") from e
 
 
 def save_tsv(df: pd.DataFrame, path: Path, header: bool = True) -> None:
