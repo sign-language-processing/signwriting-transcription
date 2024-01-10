@@ -10,7 +10,11 @@ authors = [
 readme = "README.md"
 dependencies = [
     "pose-format",
-    "tqdm"
+    "tqdm",
+    "mediapipe",
+    "joeynmt @ git+https://github.com/may-/joeys2t",
+    "signwriting @ git+https://github.com/sign-language-processing/signwriting",
+    "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation"
 ]
 
 [project.optional-dependencies]

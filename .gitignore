@@ -1,1 +1,9 @@
 .idea/
+build/
+signwriting_transcription.egg-info/
+
+# pose-to-signwriting
+transcription.zip
+transcription_data_set/
+normalized_data_set/
+vectorized_data_set/
