@@ -47,6 +47,7 @@ from .data import load_pose_data
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 def predict(
     model: Model,
     data: Dataset,
@@ -80,8 +81,6 @@ def predict(
         - valid_sequence_scores: (list) log probabilities for validation hypotheses
         - valid_attention_scores: (list) attention scores for validation hypotheses
     """
-    # pylint: disable=too-many-branches,too-many-statements
-    # parse test cfg
     (
         eval_batch_size,
         eval_batch_type,

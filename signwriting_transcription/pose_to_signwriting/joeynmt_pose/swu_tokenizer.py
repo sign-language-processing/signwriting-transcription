@@ -29,6 +29,8 @@ class SwuTokenizer(BasicTokenizer):
     This tokenizer is derived from BasicTokenizer and customized for SWU.
     It provides functionality to tokenize SWU text.
     """
+
+    # pylint: disable=too-many-arguments
     def __init__(
             self,
             level: str = "vpf",

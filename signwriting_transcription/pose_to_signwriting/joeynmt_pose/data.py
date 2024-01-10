@@ -15,6 +15,7 @@ from .swu_tokenizer import build_tokenizer
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-locals,too-many-branches,too-many-statements
 def load_pose_data(
         data_cfg: dict,
         datasets: list = None

@@ -40,6 +40,7 @@ class PoseTrainManager(TrainManager):
         if not cfg['training'].get('early_stopping_metric', None):
             self.early_stopping_metric = 'fsw_eval'
 
+    # pylint: disable=too-many-locals
     def _validate(self, valid_data: Dataset):
         if valid_data.random_subset > 0:  # subsample validation set each valid step
             try:

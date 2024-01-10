@@ -43,6 +43,7 @@ EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
 
 
 def process(args, pumping: bool = False):
+    # pylint: disable=too-many-locals
     dataset_root, data_root, name, tokenizer_type = (
         args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type,)
     cur_root = Path(data_root).absolute()
