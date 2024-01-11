@@ -39,7 +39,7 @@ from joeynmt.search import search
 from joeynmt.tokenizers import EvaluationTokenizer, build_tokenizer
 from joeynmt.vocabulary import build_vocab
 
-from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
+from signwriting_evaluation.metrics.symbol_distance import SignWritingSimilarityMetric
 
 from .data import load_pose_data
 
