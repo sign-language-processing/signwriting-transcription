@@ -77,7 +77,7 @@ class PoseProcessor(SpeechProcessor):
         # pylint: disable=not-callable
         item = item.reshape(item.shape[0], 1, -1, 3)
         body = NumPyPoseBody(None, item, np.ones(item.shape[:3]))
-        rot_std, she_std, sca_std = np.random.uniform(-0.1, 0.1, 3)
+        rot_std, she_std, sca_std = np.random.uniform(-0.2, 0.2, 3)
         item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
         item = item.data.reshape(item.data.shape[0], -1)
         return item.filled(fill_value=0)
