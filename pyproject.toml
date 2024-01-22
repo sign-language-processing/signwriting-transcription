@@ -12,7 +12,7 @@ dependencies = [
     "pose-format",
     "tqdm",
     "mediapipe",
-    "joeynmt @ git+https://github.com/may-/joeys2t.git@189043964f2fd84f924fd67750777c02696909f0",
+    "joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation",
     "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"
