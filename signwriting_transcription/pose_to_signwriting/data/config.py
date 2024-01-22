@@ -65,7 +65,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
         normalization: "tokens"
         adam_betas: [0.9, 0.98] 
         scheduling: "plateau"
-        patience: 5
+        patience: 10
         learning_rate: 0.0002
         learning_rate_min: 0.00000001
         weight_decay: 0.0
