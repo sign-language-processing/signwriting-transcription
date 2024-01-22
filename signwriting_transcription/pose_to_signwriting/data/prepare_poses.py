@@ -23,14 +23,14 @@ import numpy as np
 import pandas as pd
 
 from joeynmt.helpers import write_list_to_file
-from .pose_data_utils import (
+from pose_data_utils import (
     build_sp_model,
     create_zip,
     get_zip_manifest,
     save_tsv,
     build_pose_vocab
 )
-from .datasets_pose import load_dataset, extract_to_matrix
+from datasets_pose import load_dataset, extract_to_matrix
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
 
