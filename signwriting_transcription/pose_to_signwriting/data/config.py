@@ -103,7 +103,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             # typically ff_size = 4 x hidden_size
             hidden_size: 256
             ff_size: 1024
-            dropout: 0.2
+            dropout: 0.1
             layer_norm: "pre"
             # new for S2T:
             subsample: True           # enable 1d conv module
@@ -121,7 +121,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             # typically ff_size = 4 x hidden_size
             hidden_size: 256
             ff_size: 1024
-            dropout: 0.2
+            dropout: 0.1
             layer_norm: "pre"
     """.format(data_dir=data_path.as_posix(),
                experiment_dir=experiment_dir.as_posix())
