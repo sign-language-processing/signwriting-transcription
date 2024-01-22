@@ -23,7 +23,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             max_length: 3000            # much longer than text sequence!
             min_length: 10              # have to be specified so that 1d-conv works!
             level: "frame"              # Here we specify we're working on BPEs.
-            tokenizer_type: "speech"
+            tokenizer_type: "pose"
             tokenizer_cfg: 
                 specaugment:
                     freq_mask_n: 1
