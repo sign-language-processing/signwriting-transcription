@@ -47,6 +47,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
                 pretokenize: "none"
 
     testing:
+        eval_all_metrics: False
         n_best: 1
         beam_size: 5
         beam_alpha: 1.0

@@ -9,7 +9,6 @@ import math
 from pathlib import Path
 import shutil
 import time
-
 from torch.utils.data import Dataset
 
 from joeynmt.helpers import (
@@ -25,8 +24,8 @@ from joeynmt.helpers import (
 from joeynmt.model import Model, build_model
 from joeynmt.training import TrainManager
 
-from .data import load_pose_data
-from .prediction import predict, test
+from data import load_pose_data
+from prediction import predict, test
 
 logger = logging.getLogger(__name__)
 

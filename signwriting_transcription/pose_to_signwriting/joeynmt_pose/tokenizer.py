@@ -4,10 +4,10 @@ Tokenizer module
 """
 from __future__ import annotations
 
+import numpy as np
 import logging
 from pathlib import Path
 from typing import Dict, List, Union
-
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 from joeynmt.helpers import ConfigurationError
 from joeynmt.tokenizers import (
@@ -17,18 +17,85 @@ from joeynmt.tokenizers import (
     FastBPETokenizer,
     SpeechProcessor
 )
+from joeynmt.helpers_for_audio import get_features
+from pose_format.numpy import NumPyPoseBody
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 
 logger = logging.getLogger(__name__)
 
 
-class SwuTokenizer(BasicTokenizer):
-    """
-    Tokenizer for the SWU (SignWriting Unicode) language.
+class PoseProcessor(SpeechProcessor):
+    def __init__(
+            self,
+            level: str = "pose",
+            num_freq: int = 534,
+            normalize: bool = False,
+            max_length: int = -1,
+            min_length: int = -1,
+            **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.level = level
+        self.num_freq = num_freq
+        self.normalize = normalize
 
-    This tokenizer is derived from BasicTokenizer and customized for SWU.
-    It provides functionality to tokenize SWU text.
-    """
+        # filter by length
+        self.max_length = max_length
+        self.min_length = min_length
+
+        self.root_path = ""  # assigned later by dataset.__init__()
+
+    def __call__(self, line: str, is_train: bool = False) -> np.ndarray:
+        """
+        get features
+
+        :param line: path to audio file or pre-extracted features
+        :param is_train:
+
+        :return: spectrogram in shape (num_frames, num_freq)
+        """
+        # lookup
+        item = get_features(self.root_path, line)  # shape = (num_frames, num_freq)
+
+        num_frames, num_freq = item.shape
+        assert num_freq == self.num_freq
+
+        if self._filter_too_short_item(num_frames):
+            # A too short sequence cannot be convolved!
+            # -> filter out anyway even in test-dev set.
+            return None
+        if self._filter_too_long_item(num_frames):
+            # Don't use too long sequence in training.
+            if is_train:  # pylint: disable=no-else-return
+                return None
+            else:  # in test, truncate the sequence
+                item = item[:self.max_length, :]
+                num_frames = item.shape[0]
+                assert num_frames <= self.max_length
+
+        # cmvn / specaugment
+        # pylint: disable=not-callable
+        item = item.reshape(item.shape[0], 1, -1, 3)
+        body = NumPyPoseBody(None, item, np.ones(item.shape[:3]))
+        rot_std, she_std, sca_std = np.random.uniform(-0.2, 0.2, 3)
+        item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
+        item = item.data.reshape(item.data.shape[0], -1)
+        return item.filled(fill_value=0)
+
+
+    def _filter_too_short_item(self, length: int) -> bool:
+        return self.min_length > length > 0
+
+    def _filter_too_long_item(self, length: int) -> bool:
+        return length > self.max_length > 0
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}("
+                f"level={self.level}, normalize={self.normalize}, "
+                f"filter_by_length=({self.min_length}, {self.max_length}), ")
+
+
+class SwuTokenizer(BasicTokenizer):
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -144,14 +211,27 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
         else:
             raise ConfigurationError(f"{tokenizer_type}: Unknown tokenizer type.")
     elif cfg["level"] == "frame":
-        tokenizer = SpeechProcessor(
-            level=cfg["level"],
-            num_freq=cfg["num_freq"],
-            normalize=cfg.get("normalize", False),
-            max_length=cfg.get("max_length", -1),
-            min_length=cfg.get("min_length", -1),
-            **tokenizer_cfg,
-        )
+        tokenizer_type = cfg.get("tokenizer_type", cfg.get("bpe_type", "pose"))
+        if tokenizer_type == "speech":
+            tokenizer = SpeechProcessor(
+                level=cfg["level"],
+                num_freq=cfg["num_freq"],
+                normalize=cfg.get("normalize", False),
+                max_length=cfg.get("max_length", -1),
+                min_length=cfg.get("min_length", -1),
+                **tokenizer_cfg,
+            )
+        elif tokenizer_type == "pose":
+            tokenizer = PoseProcessor(
+                level=cfg["level"],
+                num_freq=cfg["num_freq"],
+                normalize=cfg.get("normalize", False),
+                max_length=cfg.get("max_length", -1),
+                min_length=cfg.get("min_length", -1),
+                **tokenizer_cfg,
+            )
+        else:
+            raise ConfigurationError(f"{tokenizer_type}: Unknown tokenizer type.")
     else:
         raise ConfigurationError(f"{cfg['level']}: Unknown tokenization level.")
     return tokenizer

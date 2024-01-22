@@ -36,13 +36,15 @@ from joeynmt.helpers_for_audio import pad_features
 from joeynmt.metrics import bleu, chrf, sequence_accuracy, token_accuracy, wer
 from joeynmt.model import Model, _DataParallel, build_model
 from joeynmt.search import search
-from joeynmt.tokenizers import EvaluationTokenizer, build_tokenizer
+from joeynmt.tokenizers import EvaluationTokenizer
 from joeynmt.vocabulary import build_vocab
-
+from signwriting_evaluation.metrics.bleu import SignWritingBLEU
+from signwriting_evaluation.metrics.chrf import SignWritingCHRF
 from signwriting_evaluation.metrics.symbol_distance import SignWritingSimilarityMetric
-
-from .data import load_pose_data
-
+from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
+from tokenizer import build_tokenizer
+from data import load_pose_data
+from upload_to_huggingface import update_model_info
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +101,10 @@ def predict(
     ) = parse_test_args(cfg)
     if not eval_metrics:
         eval_metrics = ['fsw_eval']
+
+    if cfg["eval_all_metrics"] is True:
+        eval_metrics = ["bleu", "chrf", "clip", "fsw_eval"]
+
     if return_prob == "ref":  # no decoding needed
         decoding_description = ""
     else:
@@ -274,11 +280,11 @@ def predict(
         # evaluate with metrics on full dataset
         for eval_metric in eval_metrics:
             if eval_metric == "bleu":
-                valid_scores[eval_metric] = bleu(valid_hyp_1best, valid_ref,
-                                                 **sacrebleu_cfg)  # detokenized ref
+                metric = SignWritingBLEU()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref,) * 100
             elif eval_metric == "chrf":
-                valid_scores[eval_metric] = chrf(valid_hyp_1best, valid_ref,
-                                                 **sacrebleu_cfg)  # detokenized ref
+                metric = SignWritingCHRF()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref,) * 100
             elif eval_metric == "token_accuracy":
                 decoded_valid_1best = (decoded_valid if n_best == 1 else [
                     decoded_valid[i] for i in range(0, len(decoded_valid), n_best)
@@ -299,8 +305,13 @@ def predict(
                 valid_scores[eval_metric] = wer(valid_hyp_1best, valid_ref,
                                                 data.tokenizer["eval"])
             elif eval_metric == "fsw_eval":
-                sign_metrics = SignWritingSimilarityMetric()
-                valid_scores[eval_metric] = sign_metrics.corpus_score(valid_hyp_1best, valid_ref) * 100
+                metric = SignWritingSimilarityMetric()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref) * 100
+
+            elif eval_metric == "clip":
+                metric = SignWritingCLIPScore(cache_directory=None)
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref) * 100
+
 
         eval_duration = time.time() - eval_start_time
         score_str = ", ".join([
@@ -335,7 +346,7 @@ def test(
     datasets: dict = None,
     save_attention: bool = False,
     save_scores: bool = False,
-) -> None:
+) -> Dict:
     """
     Main test function. Handles loading a model from checkpoint, generating
     translations, storing them, and plotting attention.
@@ -421,7 +432,7 @@ def test(
 
     # set the random seed
     set_seed(seed=cfg["training"].get("random_seed", 42))
-
+    scores = {}
     for data_set_name, data_set in data_to_predict.items():
         if data_set is not None:
             data_set.reset_random_subset()  # no subsampling in evaluation
@@ -431,7 +442,7 @@ def test(
                 "Scoring" if return_prob == "ref" else "Decoding",
                 data_set_name,
             )
-            _, _, hypotheses, hypotheses_raw, seq_scores, att_scores, = predict(
+            predict_scores, _, hypotheses, hypotheses_raw, seq_scores, att_scores, = predict(
                 model=model,
                 data=data_set,
                 compute_loss=return_prob == "ref",
@@ -442,7 +453,11 @@ def test(
                 cfg=cfg["testing"],
                 fp16=fp16,
             )
-
+            # make mean of the scores
+            for key, value in predict_scores.items():
+                if key not in scores:
+                    scores[key] = []
+                scores[key].append(value)
             if save_attention:
                 if att_scores:
                     attention_file_name = f"{data_set_name}.{ckpt.stem}.att"
@@ -480,6 +495,7 @@ def test(
                     output_path_set = Path(f"{output_path}.{data_set_name}")
                     write_list_to_file(output_path_set, hypotheses)
                     logger.info("Translations saved to: %s.", output_path_set)
+    return scores
 
 
 def translate(
@@ -646,10 +662,16 @@ if __name__ == '__main__':
     ap.add_argument("config_path", type=str, help="path to YAML config file")
 
     args = ap.parse_args()
-    test(
+    scores = test(
             cfg_file=args.config_path,
             ckpt=None,
             output_path=None,
             save_attention=None,
             save_scores=None,
     )
+    update_model_info({"model_dir": "/experiment/best.ckpt",
+                       "SymbolScore": np.mean(scores["fsw_eval"]),
+                       "BleuScore": np.mean(scores["bleu"]),
+                       "ChrfScore": np.mean(scores["chrf"]),
+                       "ClipScore": np.mean(scores["clip"]),
+                       "token": "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"})
