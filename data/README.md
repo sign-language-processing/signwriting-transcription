@@ -2,9 +2,12 @@
 
 Data includes MediaPipe poses of videos from Sign2MINT and Signsuisse, transcribed using SignWriting.
 
+Data is got from the database using `get_data.py`.
+
+
 ## Poses
 
-Poses are collected using `collect.py` and are available to download from [Google Cloud Storage](https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media).
+Poses are collected using `collect_poses.py` and are available to download from [Google Cloud Storage](https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media).
 
 It is recommended to pre-process the poses before using them for training. For example:
 ```python

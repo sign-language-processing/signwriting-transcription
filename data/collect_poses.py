@@ -4,8 +4,8 @@ import zipfile
 
 from tqdm import tqdm
 
-data_csv = "data.csv"
-data = list(DictReader(open(data_csv, "r")))
+with open("data.csv", "r", encoding="utf-8") as f:
+    data = list(DictReader(f))
 
 poses_location = Path("/scratch/amoryo/poses/sign-mt-poses")
 

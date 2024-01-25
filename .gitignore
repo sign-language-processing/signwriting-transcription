@@ -1,6 +1,7 @@
 .idea/
 build/
 signwriting_transcription.egg-info/
+data/.env
 
 # pose-to-signwriting
 transcription.zip
