@@ -12,7 +12,6 @@ dependencies = [
     "pose-format",
     "tqdm",
     "mediapipe",
-    "joeynmt @ git+https://github.com/may-/joeys2t",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation"
 ]
@@ -22,6 +21,10 @@ dev = [
     "pytest",
     "pylint"
 ]
+
+[tool.poetry.extras]
+pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t"]
+pose_to_vq_to_signwriting = []
 
 [tool.yapf]
 based_on_style = "google"
