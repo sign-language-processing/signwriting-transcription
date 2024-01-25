@@ -68,3 +68,7 @@ python -m sockeye.translate \
   --input $1/test/source_0.txt --input-factors $(find_source_files "$1/test") \
   --output $2/test.translations.factors \
   --output-type translation_with_factors
+
+# Replace "|" with space, replace "M c0 r0" with "M"
+cat $2/test.translations.factors | sed 's/|/ /g' | sed 's/M c0 r0/M/g' > $2/test.translations
+
