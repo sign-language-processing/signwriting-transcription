@@ -27,12 +27,12 @@ def load_file(file_path: str):
 
 def evaluate(hypotheses: str, reference: str):
     hypotheses = load_file(hypotheses)
-    reference = load_file(reference)
+    references = load_file(reference)
 
-    assert len(hypotheses) == len(reference), "Hypothesis and reference must have the same number of instances"
+    assert len(hypotheses) == len(references), "Hypothesis and reference must have the same number of instances"
 
     for metric in get_metrics():
-        score = metric.corpus_score(hypotheses=hypotheses, references=[[r] for r in reference]) * 100
+        score = metric.corpus_score(hypotheses=hypotheses, references=[references]) * 100
         print(metric.name, f"{score:.3f}")
 
 

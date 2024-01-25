@@ -46,8 +46,8 @@ python evaluate.py \
   --hypothesis="$MODEL_DIR/test.translations" \
   --reference="$DATA_DIR/parallel/test/target.txt" 
   
-# TokenizedBLEU 52.260
-# CHRF 38.472
+# TokenizedBLEU 6.118
+# CHRF 22.065
 # SymbolsDistances 25.953
 # CLIPScore 85.524
 ```
