@@ -12,7 +12,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # The ID and range of a sample spreadsheet.
 SAMPLE_SPREADSHEET_ID = "19mluHVMTjIraUWxxJ5FaDFk0nNZOx2fNFsRbo3tc50Q"
-SAMPLE_RANGE_NAME = "Sheet1!A2:E"
+SAMPLE_RANGE_NAME = "Sheet1!A2:F"
 
 
 def upload_line(new_row):
@@ -78,3 +78,7 @@ def upload_line(new_row):
     except HttpError as err:
         print(err)
 
+
+# if __name__ == "__main__":
+#     new_line = [f'try.ckpt', 0.5, 0.5, 0.5, 0.5, "Hello"]
+#     upload_line(new_line)

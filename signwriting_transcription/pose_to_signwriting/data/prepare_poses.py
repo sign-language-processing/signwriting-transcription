@@ -42,32 +42,7 @@ VOCAB_SIZE = 1182  # joint vocab
 EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
 
 
-def process(args, pumping: bool = False):
-    # pylint: disable=too-many-locals
-    dataset_root, data_root, name, tokenizer_type = (
-        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type,)
-    cur_root = Path(data_root).absolute()
-    cur_root = cur_root / name
-
-    # dir for filterbank (shared across splits)
-    feature_root = cur_root / f"fbank{N_MEL_FILTERS}"
-    feature_root.mkdir(parents=True, exist_ok=True)
-
-    # Extract features
-    print(f"Create pose {name} dataset.")
-
-    print("Fetching train split ...")
-    dataset = load_dataset(dataset_root)
-
-    print("Extracting pose features ...")
-    for instance in dataset:
-        utt_id = instance[0]
-        extract_to_matrix(instance[1], feature_root / f'{utt_id}.npy', overwrite=False)
-
-    # Pack features into ZIP
-    print("ZIPing features...")
-    create_zip(feature_root, feature_root.with_suffix(".zip"))
-
+def get_data(dataset, feature_root, pumping):
     print("Fetching ZIP manifest...")
     zip_manifest = get_zip_manifest(feature_root.with_suffix(".zip"))
 
@@ -99,27 +74,109 @@ def process(args, pumping: bool = False):
                 "n_frames": n_frames,
                 "trg": trg
             })
+    return all_data
+
+
+def get_split_data(dataset, feature_root, pumping):
+    print("Fetching ZIP manifest...")
+    zip_manifest = get_zip_manifest(feature_root.with_suffix(".zip"))
+
+    # Generate TSV manifest
+    print("Generating manifest...")
+    all_data = []
+
+    for instance in dataset:
+        utt_id = instance[0]
+        n_frames = np.load(feature_root / f'{utt_id}.npy').shape[0]
+        all_data.append({
+            "id": utt_id,
+            "src": zip_manifest[str(utt_id)],
+            "n_frames": n_frames,
+            "trg": instance[2],
+            "split": instance[3]
+        })
+
+    if EXPANDED_DATASET > len(all_data) and pumping:
+        print("Pumping dataset...")
+        backup = all_data.copy()
+        for i in range(EXPANDED_DATASET - len(backup)):
+            utt_id = backup[i % len(backup)]["id"]
+            n_frames = backup[i % len(backup)]["n_frames"]
+            trg = backup[i % len(backup)]["trg"]
+            src = backup[i % len(backup)]["src"]
+            split = backup[i % len(backup)]["split"]
+            all_data.append({
+                "id": f'{utt_id}({i})',  # unique id
+                "src": src,
+                "n_frames": n_frames,
+                "trg": trg,
+                "split": split
+            })
+    return all_data
+
+
+def process(args):
+    # pylint: disable=too-many-locals
+    dataset_root, data_root, name, tokenizer_type, set_split, pumping = (
+        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, args.set_split, args.pumping)
+    cur_root = Path(data_root).absolute()
+    cur_root = cur_root / name
+
+    # dir for filterbank (shared across splits)
+    feature_root = cur_root / f"fbank{N_MEL_FILTERS}"
+    feature_root.mkdir(parents=True, exist_ok=True)
+
+    # Extract features
+    print(f"Create pose {name} dataset.")
+
+    print("Fetching train split ...")
+    dataset = load_dataset(dataset_root, set_split)
+
+    print("Extracting pose features ...")
+    for instance in dataset:
+        utt_id = instance[0]
+        extract_to_matrix(instance[1], feature_root / f'{utt_id}.npy', overwrite=False)
+
+    # Pack features into ZIP
+    print("ZIPing features...")
+    create_zip(feature_root, feature_root.with_suffix(".zip"))
+
+    if not set_split:
+        all_data = get_data(dataset, feature_root, pumping)
+    else:
+        all_data = get_split_data(dataset, feature_root, pumping)
 
     all_df = pd.DataFrame.from_records(all_data)
     save_tsv(all_df, cur_root / "poses_all_data.tsv")
 
-    # Split the data into train and test set and save the splits in tsv
-    np.random.seed(SEED)
-    probs = np.random.rand(len(all_df))
-    mask = {}
-    dev_range = np.partition(probs, 300 - 1)[300 - 1]
-    test_range = np.partition(probs, 150 - 1)[150 - 1]
-    mask['train'] = probs > dev_range
-    mask['dev'] = (probs <= dev_range) & (probs > test_range)
-    mask['test'] = probs <= test_range
+    if not set_split:
+        # Split the data into train and test set and save the splits in tsv
+        np.random.seed(SEED)
+        probs = np.random.rand(len(all_df))
+        mask = {}
+        dev_range = np.partition(probs, 300 - 1)[300 - 1]
+        test_range = np.partition(probs, 150 - 1)[150 - 1]
+        mask['train'] = probs > dev_range
+        mask['dev'] = (probs <= dev_range) & (probs > test_range)
+        mask['test'] = probs <= test_range
 
-    for split in ['train', 'dev', 'test']:
-        split_df = all_df[mask[split]]
-        # save tsv
-        save_tsv(split_df, cur_root / f"{split}.tsv")
-        # save plain txt
-        write_list_to_file(cur_root / f"{split}.txt", split_df['trg'].to_list())
-        print(split, len(split_df))
+        for split in ['train', 'dev', 'test']:
+            split_df = all_df[mask[split]]
+            # save tsv
+            save_tsv(split_df, cur_root / f"{split}.tsv")
+            # save plain txt
+            write_list_to_file(cur_root / f"{split}.txt", split_df['trg'].to_list())
+            print(split, len(split_df))
+    else:
+        for split in ['train', 'dev', 'test']:
+            # split_data = list(filter(lambda entry: entry['split'] == split, all_data))
+            # split_df = pd.DataFrame.from_records(split_data)
+            split_df = all_df[all_df['split'] == split]
+            # save tsv
+            save_tsv(split_df, cur_root / f"{split}.tsv")
+            # save plain txt
+            write_list_to_file(cur_root / f"{split}.txt", split_df['trg'].to_list())
+            print(split, len(split_df))
 
     # Generate joint vocab
     print("Building joint vocab...")
@@ -142,8 +199,10 @@ def main():
     parser.add_argument("--dataset-root", required=True, type=str)
     parser.add_argument("--dataset-name", required=True, type=str)
     parser.add_argument("--tokenizer-type", required=True, type=str)
+    parser.add_argument("--set-split", required=True, type=str)
+    parser.add_argument("--pumping", required=False, type=str, default=True)
     args = parser.parse_args()
-    process(args, pumping=True)
+    process(args)
 
 
 if __name__ == "__main__":

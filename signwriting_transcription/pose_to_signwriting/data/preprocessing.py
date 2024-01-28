@@ -6,7 +6,10 @@ from pose_format.utils.generic import pose_normalization_info, correct_wrists, r
 from tqdm import tqdm
 from sign_vq.data.normalize import pre_process_mediapipe, normalize_mean_std
 
+
 def preprocess(src_dir, trg_dir, action=True):
+    if action is None:
+        action = True
     src_dir = Path(src_dir)
     trg_dir = Path(trg_dir)
     trg_dir.mkdir(parents=True, exist_ok=True)
@@ -25,10 +28,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src-dir", required=True, type=str)
     parser.add_argument("--trg-dir", required=True, type=str)
-    parser.add_argument("--action", required=False, type=str)
+    parser.add_argument("--action", required=False, type=bool)
     args = parser.parse_args()
     preprocess(args.src_dir, args.trg_dir, args.action)
     print("Done ...")
+
 
 if __name__ == "__main__":
     main()

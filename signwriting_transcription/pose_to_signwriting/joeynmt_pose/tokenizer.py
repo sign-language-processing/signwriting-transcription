@@ -32,12 +32,20 @@ class PoseProcessor(SpeechProcessor):
             normalize: bool = False,
             max_length: int = -1,
             min_length: int = -1,
+            augment: bool = False,
+            aug_param: float = 0.2,
+            noise: bool = False,
+            noise_param: float = 0.1,
             **kwargs,
     ):
         super().__init__(**kwargs)
         self.level = level
         self.num_freq = num_freq
         self.normalize = normalize
+        self.augment = augment
+        self.aug_param = aug_param
+        self.noise = noise
+        self.noise_param = noise_param
 
         # filter by length
         self.max_length = max_length
@@ -75,11 +83,15 @@ class PoseProcessor(SpeechProcessor):
 
         # cmvn / specaugment
         # pylint: disable=not-callable
-        item = item.reshape(item.shape[0], 1, -1, 3)
-        body = NumPyPoseBody(None, item, np.ones(item.shape[:3]))
-        rot_std, she_std, sca_std = np.random.uniform(-0.2, 0.2, 3)
-        item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
-        item = item.data.reshape(item.data.shape[0], -1)
+        if self.augment:
+            item = item.reshape(item.shape[0], 1, -1, 3)
+            body = NumPyPoseBody(None, item, np.ones(item.shape[:3]))
+            rot_std, she_std, sca_std = np.random.uniform(-1 * self.aug_param, self.aug_param, 3)
+            item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
+            item = item.data.reshape(item.data.shape[0], -1)
+        if self.noise:
+            gaussian_noise = np.random.normal(0, self.noise_param, item.shape)
+            item = item + gaussian_noise
         return item.filled(fill_value=0)
 
 
@@ -228,6 +240,10 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
                 normalize=cfg.get("normalize", False),
                 max_length=cfg.get("max_length", -1),
                 min_length=cfg.get("min_length", -1),
+                augment=cfg.get("augment", True),
+                aug_param=cfg.get("aug_param", 0.2),
+                noise=cfg.get("noise", False),
+                noise_param=cfg.get("noise_param", 0.1),
                 **tokenizer_cfg,
             )
         else:

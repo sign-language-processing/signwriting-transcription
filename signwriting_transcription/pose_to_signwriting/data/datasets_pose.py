@@ -27,7 +27,7 @@ def pose_to_matrix(file_path, start_ms, end_ms):
     return pose
 
 
-def load_dataset(folder_name):
+def load_dataset(folder_name, set_split):
     with open(f'{folder_name}/target.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
 
@@ -37,7 +37,10 @@ def load_dataset(folder_name):
             pose = pose.filled(fill_value=0)
             utt_id = line['pose'].split('.')[0]
             utt_id = f"{utt_id}({line['start']})"
-            dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text']))))
+            if set_split:
+                dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text']))))
+            else:
+                dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text'])), line['split']))
 
     return dataset
 
