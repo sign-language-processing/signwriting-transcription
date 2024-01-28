@@ -75,7 +75,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
         batch_size: 4                  # much bigger than text! your "tokens" are "frames" now.
         batch_type: "sentence"
         batch_multiplier: 1
-        # early_stopping_metric: "wer"
+        # early_stopping_metric:       # by default, early stopping uses "fsw_eval" metric
         epochs: 10                     # Decrease for when playing around and checking of working.
         validation_freq: 1000          # Set to at least once per epoch.
         logging_freq: 100

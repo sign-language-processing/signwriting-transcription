@@ -7,3 +7,4 @@ transcription.zip
 transcription_data_set/
 normalized_data_set/
 vectorized_data_set/
+signwriting_transcription/pose_to_signwriting/joeynmt_pose/token.json

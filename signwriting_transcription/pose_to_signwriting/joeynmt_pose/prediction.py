@@ -453,7 +453,6 @@ def test(
                 cfg=cfg["testing"],
                 fp16=fp16,
             )
-            # make mean of the scores
             for key, value in predict_scores.items():
                 if key not in scores:
                     scores[key] = []
@@ -669,9 +668,9 @@ if __name__ == '__main__':
             save_attention=None,
             save_scores=None,
     )
-    update_model_info({"model_dir": "/experiment/best.ckpt",
-                       "SymbolScore": np.mean(scores["fsw_eval"]),
-                       "BleuScore": np.mean(scores["bleu"]),
-                       "ChrfScore": np.mean(scores["chrf"]),
-                       "ClipScore": np.mean(scores["clip"]),
+    update_model_info({"model_dir": "experiment/best.ckpt",
+                       "SymbolScore": scores["fsw_eval"][1],
+                       "BleuScore": scores["bleu"][1],
+                       "ChrfScore": scores["chrf"][1],
+                       "ClipScore": scores["clip"][1],
                        "token": "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"})

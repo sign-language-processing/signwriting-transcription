@@ -15,7 +15,8 @@ dependencies = [
     "joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation",
-    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"
+    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git",
+    "google-api-python-client"
 ]
 
 [project.optional-dependencies]
