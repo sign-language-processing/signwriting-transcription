@@ -33,11 +33,14 @@ def load_dataset(folder_name, set_split):
 
         dataset = []
         for line in reader:
-            pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+            try:
+                pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+            except:
+                continue
             pose = pose.filled(fill_value=0)
             utt_id = line['pose'].split('.')[0]
             utt_id = f"{utt_id}({line['start']})"
-            if set_split:
+            if not set_split:
                 dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text']))))
             else:
                 dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text'])), line['split']))
