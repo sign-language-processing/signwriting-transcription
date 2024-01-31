@@ -24,9 +24,9 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             min_length: 10              # have to be specified so that 1d-conv works!
             level: "frame"              # Here we specify we're working on BPEs.
             tokenizer_type: "pose"
-            augment: True
+            augment: False
             aug_param: 0.2
-            noise: True
+            noise: False
             noise_param: 0.1
             tokenizer_cfg: 
                 specaugment:
