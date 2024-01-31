@@ -40,7 +40,7 @@ from joeynmt.tokenizers import EvaluationTokenizer
 from joeynmt.vocabulary import build_vocab
 from signwriting_evaluation.metrics.bleu import SignWritingBLEU
 from signwriting_evaluation.metrics.chrf import SignWritingCHRF
-from signwriting_evaluation.metrics.symbol_distance import SignWritingSimilarityMetric
+from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
 from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
 from tokenizer import build_tokenizer
 from data import load_pose_data
