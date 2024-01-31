@@ -281,10 +281,10 @@ def predict(
         for eval_metric in eval_metrics:
             if eval_metric == "bleu":
                 metric = SignWritingBLEU()
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref,) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
             elif eval_metric == "chrf":
                 metric = SignWritingCHRF()
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref,) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
             elif eval_metric == "token_accuracy":
                 decoded_valid_1best = (decoded_valid if n_best == 1 else [
                     decoded_valid[i] for i in range(0, len(decoded_valid), n_best)
@@ -306,11 +306,11 @@ def predict(
                                                 data.tokenizer["eval"])
             elif eval_metric == "fsw_eval":
                 metric = SignWritingSimilarityMetric()
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref]) * 100
 
             elif eval_metric == "clip":
                 metric = SignWritingCLIPScore(cache_directory=None)
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, valid_ref) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref]) * 100
 
 
         eval_duration = time.time() - eval_start_time
