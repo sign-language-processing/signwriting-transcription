@@ -89,10 +89,11 @@ class PoseProcessor(SpeechProcessor):
             rot_std, she_std, sca_std = np.random.uniform(-1 * self.aug_param, self.aug_param, 3)
             item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
             item = item.data.reshape(item.data.shape[0], -1)
+            item.filled(fill_value=0)
         if self.noise:
             gaussian_noise = np.random.normal(0, self.noise_param, item.shape)
             item = item + gaussian_noise
-        return item.filled(fill_value=0)
+        return item
 
 
     def _filter_too_short_item(self, length: int) -> bool:
