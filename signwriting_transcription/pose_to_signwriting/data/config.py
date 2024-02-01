@@ -26,8 +26,8 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             tokenizer_type: "pose"
             augment: True
             aug_param: 0.2
-            noise: False
-            noise_param: 0.1
+            noise: True
+            noise_param: 0.05
             tokenizer_cfg: 
                 specaugment:
                     freq_mask_n: 1
@@ -69,7 +69,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
         normalization: "tokens"
         adam_betas: [0.9, 0.98] 
         scheduling: "plateau"
-        patience: 15
+        patience: 10
         learning_rate: 0.0002
         learning_rate_min: 0.00000001
         weight_decay: 0.0
