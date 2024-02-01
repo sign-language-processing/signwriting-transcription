@@ -27,7 +27,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             augment: True
             aug_param: 0.2
             noise: True
-            noise_param: 0.05
+            noise_param: 0.1
             tokenizer_cfg: 
                 specaugment:
                     freq_mask_n: 1
