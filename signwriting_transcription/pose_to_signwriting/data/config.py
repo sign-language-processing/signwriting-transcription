@@ -25,7 +25,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             level: "frame"              # Here we specify we're working on BPEs.
             tokenizer_type: "pose"
             augment: True
-            aug_param: 0.1
+            aug_param: 0.2
             noise: False
             noise_param: 0.1
             tokenizer_cfg: 
@@ -69,7 +69,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
         normalization: "tokens"
         adam_betas: [0.9, 0.98] 
         scheduling: "plateau"
-        patience: 10
+        patience: 15
         learning_rate: 0.0002
         learning_rate_min: 0.00000001
         weight_decay: 0.0
@@ -107,7 +107,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             # typically ff_size = 4 x hidden_size
             hidden_size: 256
             ff_size: 1024
-            dropout: 0.2
+            dropout: 0.1
             layer_norm: "pre"
             # new for S2T:
             subsample: True           # enable 1d conv module
@@ -125,7 +125,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             # typically ff_size = 4 x hidden_size
             hidden_size: 256
             ff_size: 1024
-            dropout: 0.2
+            dropout: 0.1
             layer_norm: "pre"
     """.format(data_dir=data_path.as_posix(),
                experiment_dir=experiment_dir.as_posix())
