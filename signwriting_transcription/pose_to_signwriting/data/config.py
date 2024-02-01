@@ -25,7 +25,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             level: "frame"              # Here we specify we're working on BPEs.
             tokenizer_type: "pose"
             augment: True
-            aug_param: 0.2
+            aug_param: 0.1
             noise: False
             noise_param: 0.1
             tokenizer_cfg: 
