@@ -36,8 +36,7 @@ class PoseTrainManager(TrainManager):
     """
     def __init__(self, model: Model, cfg: dict) -> None:
         super().__init__(model, cfg)
-        if not cfg['training'].get('early_stopping_metric', None):
-            self.early_stopping_metric = 'fsw_eval'
+        self.early_stopping_metric = 'fsw_eval'
 
     # pylint: disable=too-many-locals
     def _validate(self, valid_data: Dataset):

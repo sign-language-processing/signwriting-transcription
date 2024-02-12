@@ -38,7 +38,10 @@ disable = [
 
 [tool.setuptools]
 packages = [
-    "signwriting_transcription"
+    "signwriting_transcription",
+    "signwriting_evaluation.pose_to_signwriting",
+    "signwriting_evaluation.pose_to_signwriting.data",
+    "signwriting_evaluation.pose_to_signwriting.joeynmt_pose",
 ]
 
 [tool.pytest.ini_options]

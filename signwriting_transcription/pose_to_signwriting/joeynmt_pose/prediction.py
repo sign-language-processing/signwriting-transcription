@@ -42,6 +42,7 @@ from signwriting_evaluation.metrics.bleu import SignWritingBLEU
 from signwriting_evaluation.metrics.chrf import SignWritingCHRF
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
 from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
+
 from tokenizer import build_tokenizer
 from data import load_pose_data
 from upload_to_huggingface import update_model_info
@@ -134,7 +135,6 @@ def predict(
         pad_index=model.pad_index,
         device=device,
     )
-
     # disable dropout
     model.eval()
 
@@ -499,15 +499,17 @@ def test(
 
 def translate(
     cfg_file: str,
+    pose_files:list[str],
     ckpt: str = None,
     output_path: str = None,
-) -> None:
+) -> List[str]:
     """
     Interactive translation function.
     Loads model from checkpoint and translates either the stdin input or asks for
     input to translate interactively. Translations and scores are printed to stdout.
     Note: The input sentences don't have to be pre-tokenized.
 
+    :param pose_file: the pose object
     :param cfg_file: path to configuration file
     :param ckpt: path to checkpoint to load
     :param output_path: path to output file
@@ -587,90 +589,39 @@ def translate(
     n_best = test_cfg.get("n_best", 1)
     beam_size = test_cfg.get("beam_size", 1)
     return_prob = test_cfg.get("return_prob", "none")
-    if not sys.stdin.isatty():  # pylint: disable=too-many-nested-blocks
-        # input stream given
-        for i, line in enumerate(sys.stdin.readlines()):
-            if not line.strip():
-                # skip empty lines and print warning
-                logger.warning("The sentence in line %d is empty. Skip to load.", i)
-                continue
-            test_data.set_item(line.rstrip())
-        all_hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
-        assert len(all_hypotheses) == len(test_data) * n_best
-
-        if output_path is not None:
-            # write to outputfile if given
-            out_file = Path(output_path).expanduser()
-
-            if n_best > 1:
-                for n in range(n_best):
-                    write_list_to_file(
-                        out_file.parent / f"{out_file.stem}-{n}.{out_file.suffix}",
-                        [
-                            all_hypotheses[i]
-                            for i in range(n, len(all_hypotheses), n_best)
-                        ],
-                    )
-            else:
-                write_list_to_file(out_file, all_hypotheses)
-
-            logger.info("Translations saved to: %s.", out_file)
-
-        else:
-            # print to stdout
-            for hyp in all_hypotheses:
-                print(hyp)
-
-    else:
-        # enter interactive mode
-        test_cfg["batch_size"] = 1  # CAUTION: this will raise an error if n_gpus > 1
-        test_cfg["batch_type"] = "sentence"
-        np.set_printoptions(linewidth=sys.maxsize)  # for printing scores in stdout
-        while True:
-            try:
-                src_input = input("\nPlease enter a source sentence:\n")
-                if not src_input.strip():
-                    break
-
-                # every line has to be made into dataset
-                test_data.set_item(src_input.rstrip())
-                hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
-
-                print("JoeyNMT:")
-                for i, (hyp, token,
-                        score) in enumerate(zip_longest(hypotheses, tokens, scores)):
-                    assert hyp is not None, (i, hyp, token, score)
-                    print(f"#{i + 1}: {hyp}")
-                    if return_prob in ["hyp"]:
-                        if beam_size > 1:  # beam search: sequence-level scores
-                            print(f"\ttokens: {token}\n\tsequence score: {score[0]}")
-                        else:  # greedy: token-level scores
-                            assert len(token) == len(score), (token, score)
-                            print(f"\ttokens: {token}\n\tscores: {score}")
-
-                # reset cache
-                test_data.reset_cache()
-
-            except (KeyboardInterrupt, EOFError):
-                print("\nBye.")
-                break
+    for pose_file in pose_files:
+        test_data.set_item(pose_file)
+    all_hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
+    assert len(all_hypotheses) == len(test_data) * n_best
+    for h in all_hypotheses:
+        print(h)
+    return all_hypotheses
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser("Pose NMT")
 
     ap.add_argument("config_path", type=str, help="path to YAML config file")
-
+    ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
+    ap.add_argument("pose_path", type=str, help="path to pose")
     args = ap.parse_args()
-    scores = test(
+    if args.mode == "test":
+        scores = test(
             cfg_file=args.config_path,
             ckpt=None,
             output_path=None,
             save_attention=None,
-            save_scores=None,
-    )
-    update_model_info({"model_dir": "experiment/best.ckpt",
-                       "SymbolScore": scores["fsw_eval"][1],
-                       "BleuScore": scores["bleu"][1],
-                       "ChrfScore": scores["chrf"][1],
-                       "ClipScore": scores["clip"][1],
-                       "token": "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"})
+            save_scores=None,)
+        update_model_info({"model_dir": "experiment/best.ckpt",
+                           "SymbolScore": scores["fsw_eval"][1],
+                           "BleuScore": scores["bleu"][1],
+                           "ChrfScore": scores["chrf"][1],
+                           "ClipScore": scores["clip"][1],
+                           "token": "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"})
+    else:
+        translate(
+            cfg_file=args.config_path,
+            pose_file=args.pose_path,
+            ckpt=None,
+            output_path=None,
+        )
+
