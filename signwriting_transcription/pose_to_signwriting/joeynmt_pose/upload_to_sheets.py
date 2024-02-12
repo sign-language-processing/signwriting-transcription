@@ -52,11 +52,6 @@ def upload_line(new_row):
         )
         values = result.get("values", [])
 
-        # if not values:
-        #     print("No data found.")
-        #     return
-
-        # Append new row to existing data
         values.append(new_row)
 
         # Update the sheet with the new values
@@ -73,14 +68,5 @@ def upload_line(new_row):
         )
 
         print("Spreadsheet updated!")
-        # print("Name, Major:")
-        # for row in values:
-        #     # Print columns A and E, which correspond to indices 0 and 4.
-        #     print(f"{row[0]}: {row[1]} {row[2]} {row[3]} {row[4]}")
     except HttpError as err:
         print(err)
-
-
-# if __name__ == "__main__":
-#     new_line = [f'try.ckpt', 0.5, 0.5, 0.5, 0.5, "Hello"]
-#     upload_line(new_line)
