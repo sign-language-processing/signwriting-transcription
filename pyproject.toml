@@ -25,6 +25,10 @@ dev = [
     "pylint"
 ]
 
+[tool.poetry.extras]
+pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t"]
+pose_to_vq_to_signwriting = []
+
 [tool.yapf]
 based_on_style = "google"
 column_limit = 120
