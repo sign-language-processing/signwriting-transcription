@@ -12,14 +12,14 @@ def fsw_cut(fsw_text: str) -> str:
     return fsw_text
 
 
-def ms2frame(ms, frame_rate) -> int:
-    ms = int(ms)
-    return int(ms / 1000 * frame_rate)
+def ms2frame(mil_sec, frame_rate) -> int:
+    mil_sec = int(mil_sec)
+    return int(mil_sec / 1000 * frame_rate)
 
 
 def pose_to_matrix(file_path, start_ms, end_ms):
-    with open(file_path, "rb") as f:
-        pose = Pose.read(f.read())
+    with open(file_path, "rb") as file:
+        pose = Pose.read(file.read())
     frame_rate = 29.97003 if file_path == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
     pose = pose.body.data
     pose = pose.reshape(len(pose), -1)
@@ -35,7 +35,7 @@ def load_dataset(folder_name, set_split):
         for line in reader:
             try:
                 pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
-            except:
+            except FileNotFoundError:
                 continue
             pose = pose.filled(fill_value=0)
             utt_id = line['pose'].split('.')[0]

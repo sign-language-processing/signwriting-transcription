@@ -23,14 +23,16 @@ import numpy as np
 import pandas as pd
 
 from joeynmt.helpers import write_list_to_file
-from pose_data_utils import (
+from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
     build_sp_model,
     create_zip,
     get_zip_manifest,
     save_tsv,
     build_pose_vocab
 )
-from datasets_pose import load_dataset, extract_to_matrix
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import (
+    load_dataset, extract_to_matrix
+)
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
 
@@ -118,7 +120,8 @@ def get_split_data(dataset, feature_root, pumping):
 def process(args):
     # pylint: disable=too-many-locals
     dataset_root, data_root, name, tokenizer_type, set_split, pumping = (
-        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, args.set_split, args.pumping)
+        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type,
+        args.set_split, args.pumping)
     cur_root = Path(data_root).absolute()
     cur_root = cur_root / name
 

@@ -4,10 +4,10 @@ Tokenizer module
 """
 from __future__ import annotations
 
-import numpy as np
 import logging
 from pathlib import Path
 from typing import Dict, List, Union
+import numpy as np
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 from joeynmt.helpers import ConfigurationError
 from joeynmt.tokenizers import (
@@ -23,7 +23,7 @@ from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements,too-many-instance-attributes
 class PoseProcessor(SpeechProcessor):
     def __init__(
             self,
@@ -107,7 +107,7 @@ class PoseProcessor(SpeechProcessor):
                 f"level={self.level}, normalize={self.normalize}, "
                 f"filter_by_length=({self.min_length}, {self.max_length}), ")
 
-
+# pylint: disable=too-many-branches
 class SwuTokenizer(BasicTokenizer):
 
     # pylint: disable=too-many-arguments

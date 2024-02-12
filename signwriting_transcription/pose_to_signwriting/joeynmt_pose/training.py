@@ -24,8 +24,8 @@ from joeynmt.helpers import (
 from joeynmt.model import Model, build_model
 from joeynmt.training import TrainManager
 
-from data import load_pose_data
-from prediction import predict, test
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import predict, test
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +49,8 @@ class PoseTrainManager(TrainManager):
                     len(valid_data),
                     self.stats.steps,
                 )
-            except AssertionError as e:
-                logger.warning(e)
+            except AssertionError as error:
+                logger.warning(error)
 
         valid_start_time = time.time()
         (

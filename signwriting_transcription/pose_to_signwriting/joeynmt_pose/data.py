@@ -9,7 +9,7 @@ import logging
 from joeynmt.datasets import BaseDataset, build_dataset
 from joeynmt.helpers_for_audio import pad_features
 from joeynmt.vocabulary import Vocabulary, build_vocab
-from tokenizer import build_tokenizer
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.tokenizer import build_tokenizer
 
 logger = logging.getLogger(__name__)
 

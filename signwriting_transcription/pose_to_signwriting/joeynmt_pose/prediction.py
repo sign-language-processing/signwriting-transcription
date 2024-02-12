@@ -6,10 +6,8 @@ This modules holds methods for generating predictions from a model.
 import argparse
 import logging
 import math
-import sys
 import time
 from functools import partial
-from itertools import zip_longest
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -33,7 +31,7 @@ from joeynmt.helpers import (
     write_list_to_file,
 )
 from joeynmt.helpers_for_audio import pad_features
-from joeynmt.metrics import bleu, chrf, sequence_accuracy, token_accuracy, wer
+from joeynmt.metrics import sequence_accuracy, token_accuracy, wer
 from joeynmt.model import Model, _DataParallel, build_model
 from joeynmt.search import search
 from joeynmt.tokenizers import EvaluationTokenizer
@@ -43,9 +41,9 @@ from signwriting_evaluation.metrics.chrf import SignWritingCHRF
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
 from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
 
-from tokenizer import build_tokenizer
-from data import load_pose_data
-from upload_to_huggingface import update_model_info
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.tokenizer import build_tokenizer
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.upload_to_huggingface import update_model_info
 
 logger = logging.getLogger(__name__)
 
@@ -501,7 +499,6 @@ def translate(
     cfg_file: str,
     pose_files:list[str],
     ckpt: str = None,
-    output_path: str = None,
 ) -> List[str]:
     """
     Interactive translation function.
@@ -587,14 +584,12 @@ def translate(
     set_seed(seed=cfg["training"].get("random_seed", 42))
 
     n_best = test_cfg.get("n_best", 1)
-    beam_size = test_cfg.get("beam_size", 1)
-    return_prob = test_cfg.get("return_prob", "none")
     for pose_file in pose_files:
         test_data.set_item(pose_file)
-    all_hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
+    all_hypotheses, _, _ = _translate_data(test_data, test_cfg)
     assert len(all_hypotheses) == len(test_data) * n_best
-    for h in all_hypotheses:
-        print(h)
+    for hey in all_hypotheses:
+        print(hey)
     return all_hypotheses
 
 if __name__ == '__main__':
@@ -605,23 +600,24 @@ if __name__ == '__main__':
     ap.add_argument("pose_path", type=str, help="path to pose")
     args = ap.parse_args()
     if args.mode == "test":
-        scores = test(
+        score_results = test(
             cfg_file=args.config_path,
             ckpt=None,
-            output_path=None,
             save_attention=None,
             save_scores=None,)
         update_model_info({"model_dir": "experiment/best.ckpt",
-                           "SymbolScore": scores["fsw_eval"][1],
-                           "BleuScore": scores["bleu"][1],
-                           "ChrfScore": scores["chrf"][1],
-                           "ClipScore": scores["clip"][1],
+                           "SymbolScore": score_results["fsw_eval"][1],
+                           "BleuScore": score_results["bleu"][1],
+                           "ChrfScore": score_results["chrf"][1],
+                           "ClipScore": score_results["clip"][1],
+                           "SymbolScore_dev": score_results["fsw_eval"][0],
+                           "BleuScore_dev": score_results["bleu"][0],
+                           "ChrfScore_dev": score_results["chrf"][0],
+                           "ClipScore_dev": score_results["clip"][0],
                            "token": "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"})
     else:
         translate(
             cfg_file=args.config_path,
-            pose_file=args.pose_path,
+            pose_files=args.pose_path,
             ckpt=None,
-            output_path=None,
         )
-
