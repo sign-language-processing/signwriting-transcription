@@ -12,9 +12,9 @@ def fsw_cut(fsw_text: str) -> str:
     return fsw_text
 
 
-def ms2frame(mil_sec, frame_rate) -> int:
-    mil_sec = int(mil_sec)
-    return int(mil_sec / 1000 * frame_rate)
+def ms2frame(ms, frame_rate) -> int:
+    ms = int(ms)
+    return int(ms / 1000 * frame_rate)
 
 
 def pose_to_matrix(file_path, start_ms, end_ms):

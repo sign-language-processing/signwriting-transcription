@@ -4,10 +4,10 @@ import argparse
 from pathlib import Path
 
 import os
-import wget
 from tqdm import tqdm
 import numpy as np
 import pympi
+from huggingface_hub import hf_hub_download
 
 from signwriting_transcription.pose_to_signwriting.data.preprocessing import preprocess
 from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import build_pose_vocab
@@ -15,7 +15,7 @@ from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pos
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import translate
 
-URL_HUGGINGFACE = "https://huggingface.co/spaces/ohadlanger/signwriting_transcription/resolve/main/"
+HUGGINGFACE_REPO_ID = "ohadlanger/signwriting_transcription"
 
 
 def get_args():
@@ -31,14 +31,14 @@ def get_args():
 def main():
     args = get_args()
     print('Downloading model...')
-    if not os.path.exists("experiment"):
-        os.makedirs("experiment")
-    wget.download(f'{URL_HUGGINGFACE}{args.model}?download=true', 'experiment/best.ckpt')
+    os.makedirs("experiment", exist_ok=True)
+    hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, output_dir="experiment",
+                    file_name="best.ckpt")
     build_pose_vocab(Path('experiment/spm_bpe1182.vocab').absolute())
     create_test_config('experiment', 'experiment')
 
     print('Loading ELAN file...')
-    eaf = pympi.Elan.Eaf(file_path=args.elan, author="sign-langauge-processing/recognition")
+    eaf = pympi.Elan.Eaf(file_path=args.elan, author="sign-language-processing/signwriting-transcription")
     sign_annotations = eaf.get_annotation_data_for_tier('SIGN')
 
     print('loading sign.....')
@@ -54,9 +54,10 @@ def main():
     hyp_list = translate('experiment/config.yaml', temp_files)
     for rm_file in temp_files:
         os.remove(rm_file)
-    with open('experiment/prediction.txt', 'w', encoding='utf-8') as file:
-        for item in hyp_list:
-            file.write(f"{item}\n")
+    for index, segment in enumerate(sign_annotations):
+        eaf.remove_annotation('SIGN', segment[0])
+        eaf.add_annotation('SIGN', segment[0], segment[1], hyp_list[index])
+    eaf.to_file(args.elan)
 
 
 if __name__ == '__main__':
