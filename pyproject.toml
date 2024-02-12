@@ -47,3 +47,6 @@ packages = [
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = ["signwriting_transcription"]
+
+[project.scripts]
+sign_language_recognition = "signwriting_transcription.pose_to_signwiritng.bin:main"
