@@ -7,14 +7,14 @@ from tqdm import tqdm
 from sign_vq.data.normalize import pre_process_mediapipe, normalize_mean_std
 
 
-def preprocess(src_dir, trg_dir, action=True):
+def preprocess(src_dir, trg_dir, normalization=True):
     src_dir = Path(src_dir)
     trg_dir = Path(trg_dir)
     trg_dir.mkdir(parents=True, exist_ok=True)
     for path in tqdm(src_dir.glob("*.pose")):
         with open(src_dir / path.name, 'rb') as pose_file:
             pose = Pose.read(pose_file.read())
-        if action:
+        if normalization:
             pose = pre_process_mediapipe(pose)
             pose = normalize_mean_std(pose)
         else:
@@ -28,10 +28,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src-dir", required=True, type=str)
     parser.add_argument("--trg-dir", required=True, type=str)
-    parser.add_argument("--action", required=False, type=str, default="True")
+    parser.add_argument("--normalization", required=False, type=str, default="True")
     args = parser.parse_args()
-    args.action = args.action == "True"
-    preprocess(args.src_dir, args.trg_dir, args.action)
+    args.normalization = args.normalization == "True"
+    preprocess(args.src_dir, args.trg_dir, args.normalization)
     print("Done ...")
 
 

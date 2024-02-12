@@ -12,7 +12,7 @@ dependencies = [
     "pose-format",
     "tqdm",
     "mediapipe",
-    "signwriting @ git+https://gisthub.com/sign-language-processing/signwriting",
+    "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
     "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git",
     "google-api-python-client",

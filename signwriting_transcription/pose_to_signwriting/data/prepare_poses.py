@@ -119,9 +119,9 @@ def get_split_data(dataset, feature_root, pumping):
 
 def process(args):
     # pylint: disable=too-many-locals
-    dataset_root, data_root, name, tokenizer_type, set_split, pumping = (
+    dataset_root, data_root, name, tokenizer_type, split, pumping = (
         args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type,
-        args.set_split, args.pumping)
+        args.split, args.pumping)
     cur_root = Path(data_root).absolute()
     cur_root = cur_root / name
 
@@ -133,7 +133,7 @@ def process(args):
     print(f"Create pose {name} dataset.")
 
     print("Fetching train split ...")
-    dataset = load_dataset(dataset_root, set_split)
+    dataset = load_dataset(dataset_root, split)
 
     print("Extracting pose features ...")
     for instance in dataset:
@@ -144,7 +144,7 @@ def process(args):
     print("ZIPing features...")
     create_zip(feature_root, feature_root.with_suffix(".zip"))
 
-    if not set_split:
+    if not split:
         all_data = get_data(dataset, feature_root, pumping)
     else:
         all_data = get_split_data(dataset, feature_root, pumping)
@@ -152,7 +152,7 @@ def process(args):
     all_df = pd.DataFrame.from_records(all_data)
     save_tsv(all_df, cur_root / "poses_all_data.tsv")
 
-    if not set_split:
+    if not split:
         # Split the data into train and test set and save the splits in tsv
         np.random.seed(SEED)
         probs = np.random.rand(len(all_df))
