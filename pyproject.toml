@@ -49,4 +49,4 @@ addopts = "-v"
 testpaths = ["signwriting_transcription"]
 
 [project.scripts]
-sign_language_recognition = "signwriting_transcription.pose_to_signwiritng.bin:main"
+signwriting_transcription = "signwriting_transcription.pose_to_signwiritng.bin:main"
