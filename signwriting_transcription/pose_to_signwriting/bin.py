@@ -3,9 +3,8 @@
 import argparse
 from pathlib import Path
 
-import wget
 import os
-from pose_format.pose import Pose
+import wget
 from tqdm import tqdm
 import numpy as np
 import pympi
@@ -17,6 +16,8 @@ from signwriting_transcription.pose_to_signwriting.data.config import create_tes
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import translate
 
 URL_HUGGINGFACE = "https://huggingface.co/spaces/ohadlanger/signwriting_transcription/resolve/main/"
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', required=True, type=str,
@@ -53,10 +54,10 @@ def main():
     hyp_list = translate('experiment/config.yaml', temp_files)
     for rm_file in temp_files:
         os.remove(rm_file)
-    with open('experiment/prediction.txt', 'w') as f:
+    with open('experiment/prediction.txt', 'w', encoding='utf-8') as file:
         for item in hyp_list:
-            f.write("%s\n" % item)
+            file.write(f"{item}\n")
+
 
 if __name__ == '__main__':
     main()
-    # python -m sign_language_transcription.pose_to_signwriting.bin --model="v.ckpt" --pose="sign.pose" --elan="sign.eaf"
