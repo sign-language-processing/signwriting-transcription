@@ -14,7 +14,6 @@ dependencies = [
     "mediapipe",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
-    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git",
     "google-api-python-client",
     "pympi-ling"
 ]
@@ -27,7 +26,7 @@ dev = [
 
 [tool.poetry.extras]
 pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
-pose_to_vq_to_signwriting = []
+pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
 
 [tool.yapf]
 based_on_style = "google"
@@ -55,4 +54,4 @@ addopts = "-v"
 testpaths = ["signwriting_transcription"]
 
 [project.scripts]
-signwriting_transcription = "signwriting_transcription.pose_to_signwriting.bin:main"
+pose_to_signwriting = "signwriting_transcription.pose_to_signwriting.bin:main"

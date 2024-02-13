@@ -50,7 +50,6 @@ def main():
         np_pose = pose_to_matrix(args.pose, segment[0], segment[1]).filled(fill_value=0)
         np.save(f'experiment/temp{index}.npy', np_pose)
         temp_files.append(f'experiment/temp{index}.npy')
-        eaf.remove_annotation('SIGN', segment[0])
     hyp_list = translate('experiment/config.yaml', temp_files)
     for rm_file in temp_files:
         os.remove(rm_file)
