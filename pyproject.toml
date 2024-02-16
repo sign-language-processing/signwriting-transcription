@@ -9,20 +9,28 @@ authors = [
 ]
 readme = "README.md"
 dependencies = [
-    "pose-format",
     "tqdm",
+    # Loading and processing poses
+    "pose-format",
     "mediapipe",
+    # SignWriting essentials
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
-    "google-api-python-client",
-    "pympi-ling",
-    "sentencepiece",
-    "pandas"
+    # CLI
+    "pympi-ling", # Used for reading and writing ELAN files
 ]
 
 [project.optional-dependencies]
-pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
-pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
+pose_to_signwriting = [
+    "joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b", # Model framework
+    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git", # Used for normalization
+    "sentencepiece",
+    "pandas",
+    "google-api-python-client", # Uploads results to Google Sheets
+]
+pose_to_vq_to_signwriting = [
+    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git" # Used for getting codes from poses
+]
 
 dev = [
     "pytest",
