@@ -1,5 +1,4 @@
 import argparse
-from functools import lru_cache
 
 from signwriting.tokenizer import SignWritingTokenizer
 from signwriting_evaluation.metrics.bleu import SignWritingBLEU
