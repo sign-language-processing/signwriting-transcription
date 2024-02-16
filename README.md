@@ -1,4 +1,4 @@
-# SignWriting Transcription
+q# SignWriting Transcription
 
 This project aims to automatically transcribe SignWriting from isolated/continuous sign language videos.
 
@@ -10,18 +10,6 @@ This project aims to automatically transcribe SignWriting from isolated/continuo
 |:-----------:|:---------------------------------------------------:|:---------------------------------------------------:|:---------------------------------------------------:|
 |    Video    | <img src="assets/examples/00004.gif" width="150px"> | <img src="assets/examples/00007.gif" width="150px"> | <img src="assets/examples/00015.gif" width="150px"> |
 | SignWriting | <img src="assets/examples/00004.png" width="50px">  | <img src="assets/examples/00007.png" width="50px">  | <img src="assets/examples/00015.png" width="50px">  |
-
-## Usage
-```
-git clone https://github.com/sign-language-processing/signwriting-transcription.git
-cd signwriting-transcription
-pip install .[dev,pose_to_signwriting]
-cd ..
-```
-To translate pose file to signwriting fsw format
-```
-pose_to_signwriting --model="{model_number}.ckpt" --pose="example.pose" --elan="example.eaf"
-```
 
 ## Tokenization
 
