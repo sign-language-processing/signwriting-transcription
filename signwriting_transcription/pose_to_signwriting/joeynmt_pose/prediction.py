@@ -6,10 +6,8 @@ This modules holds methods for generating predictions from a model.
 import argparse
 import logging
 import math
-import sys
 import time
 from functools import partial
-from itertools import zip_longest
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -33,16 +31,19 @@ from joeynmt.helpers import (
     write_list_to_file,
 )
 from joeynmt.helpers_for_audio import pad_features
-from joeynmt.metrics import bleu, chrf, sequence_accuracy, token_accuracy, wer
+from joeynmt.metrics import sequence_accuracy, token_accuracy, wer
 from joeynmt.model import Model, _DataParallel, build_model
 from joeynmt.search import search
-from joeynmt.tokenizers import EvaluationTokenizer, build_tokenizer
+from joeynmt.tokenizers import EvaluationTokenizer
 from joeynmt.vocabulary import build_vocab
-
+from signwriting_evaluation.metrics.bleu import SignWritingBLEU
+from signwriting_evaluation.metrics.chrf import SignWritingCHRF
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
+from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
 
-from .data import load_pose_data
-
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.tokenizer import build_tokenizer
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.upload_to_huggingface import update_model_info
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,10 @@ def predict(
     ) = parse_test_args(cfg)
     if not eval_metrics:
         eval_metrics = ['fsw_eval']
+
+    if cfg["eval_all_metrics"] is True:
+        eval_metrics = ["bleu", "chrf", "clip", "fsw_eval"]
+
     if return_prob == "ref":  # no decoding needed
         decoding_description = ""
     else:
@@ -128,7 +133,6 @@ def predict(
         pad_index=model.pad_index,
         device=device,
     )
-
     # disable dropout
     model.eval()
 
@@ -274,11 +278,11 @@ def predict(
         # evaluate with metrics on full dataset
         for eval_metric in eval_metrics:
             if eval_metric == "bleu":
-                valid_scores[eval_metric] = bleu(valid_hyp_1best, valid_ref,
-                                                 **sacrebleu_cfg)  # detokenized ref
+                metric = SignWritingBLEU()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
             elif eval_metric == "chrf":
-                valid_scores[eval_metric] = chrf(valid_hyp_1best, valid_ref,
-                                                 **sacrebleu_cfg)  # detokenized ref
+                metric = SignWritingCHRF()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
             elif eval_metric == "token_accuracy":
                 decoded_valid_1best = (decoded_valid if n_best == 1 else [
                     decoded_valid[i] for i in range(0, len(decoded_valid), n_best)
@@ -299,8 +303,13 @@ def predict(
                 valid_scores[eval_metric] = wer(valid_hyp_1best, valid_ref,
                                                 data.tokenizer["eval"])
             elif eval_metric == "fsw_eval":
-                sign_metrics = SignWritingSimilarityMetric()
-                valid_scores[eval_metric] = sign_metrics.corpus_score(valid_hyp_1best, valid_ref) * 100
+                metric = SignWritingSimilarityMetric()
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref]) * 100
+
+            elif eval_metric == "clip":
+                metric = SignWritingCLIPScore(cache_directory=None)
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref]) * 100
+
 
         eval_duration = time.time() - eval_start_time
         score_str = ", ".join([
@@ -335,7 +344,7 @@ def test(
     datasets: dict = None,
     save_attention: bool = False,
     save_scores: bool = False,
-) -> None:
+) -> Dict:
     """
     Main test function. Handles loading a model from checkpoint, generating
     translations, storing them, and plotting attention.
@@ -421,7 +430,7 @@ def test(
 
     # set the random seed
     set_seed(seed=cfg["training"].get("random_seed", 42))
-
+    scores = {}
     for data_set_name, data_set in data_to_predict.items():
         if data_set is not None:
             data_set.reset_random_subset()  # no subsampling in evaluation
@@ -431,7 +440,7 @@ def test(
                 "Scoring" if return_prob == "ref" else "Decoding",
                 data_set_name,
             )
-            _, _, hypotheses, hypotheses_raw, seq_scores, att_scores, = predict(
+            predict_scores, _, hypotheses, hypotheses_raw, seq_scores, att_scores, = predict(
                 model=model,
                 data=data_set,
                 compute_loss=return_prob == "ref",
@@ -442,7 +451,10 @@ def test(
                 cfg=cfg["testing"],
                 fp16=fp16,
             )
-
+            for key, value in predict_scores.items():
+                if key not in scores:
+                    scores[key] = []
+                scores[key].append(value)
             if save_attention:
                 if att_scores:
                     attention_file_name = f"{data_set_name}.{ckpt.stem}.att"
@@ -480,19 +492,21 @@ def test(
                     output_path_set = Path(f"{output_path}.{data_set_name}")
                     write_list_to_file(output_path_set, hypotheses)
                     logger.info("Translations saved to: %s.", output_path_set)
+    return scores
 
 
 def translate(
     cfg_file: str,
+    pose_files:list[str],
     ckpt: str = None,
-    output_path: str = None,
-) -> None:
+) -> List[str]:
     """
     Interactive translation function.
     Loads model from checkpoint and translates either the stdin input or asks for
     input to translate interactively. Translations and scores are printed to stdout.
     Note: The input sentences don't have to be pre-tokenized.
 
+    :param pose_file: the pose object
     :param cfg_file: path to configuration file
     :param ckpt: path to checkpoint to load
     :param output_path: path to output file
@@ -570,86 +584,40 @@ def translate(
     set_seed(seed=cfg["training"].get("random_seed", 42))
 
     n_best = test_cfg.get("n_best", 1)
-    beam_size = test_cfg.get("beam_size", 1)
-    return_prob = test_cfg.get("return_prob", "none")
-    if not sys.stdin.isatty():  # pylint: disable=too-many-nested-blocks
-        # input stream given
-        for i, line in enumerate(sys.stdin.readlines()):
-            if not line.strip():
-                # skip empty lines and print warning
-                logger.warning("The sentence in line %d is empty. Skip to load.", i)
-                continue
-            test_data.set_item(line.rstrip())
-        all_hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
-        assert len(all_hypotheses) == len(test_data) * n_best
-
-        if output_path is not None:
-            # write to outputfile if given
-            out_file = Path(output_path).expanduser()
-
-            if n_best > 1:
-                for n in range(n_best):
-                    write_list_to_file(
-                        out_file.parent / f"{out_file.stem}-{n}.{out_file.suffix}",
-                        [
-                            all_hypotheses[i]
-                            for i in range(n, len(all_hypotheses), n_best)
-                        ],
-                    )
-            else:
-                write_list_to_file(out_file, all_hypotheses)
-
-            logger.info("Translations saved to: %s.", out_file)
-
-        else:
-            # print to stdout
-            for hyp in all_hypotheses:
-                print(hyp)
-
-    else:
-        # enter interactive mode
-        test_cfg["batch_size"] = 1  # CAUTION: this will raise an error if n_gpus > 1
-        test_cfg["batch_type"] = "sentence"
-        np.set_printoptions(linewidth=sys.maxsize)  # for printing scores in stdout
-        while True:
-            try:
-                src_input = input("\nPlease enter a source sentence:\n")
-                if not src_input.strip():
-                    break
-
-                # every line has to be made into dataset
-                test_data.set_item(src_input.rstrip())
-                hypotheses, tokens, scores = _translate_data(test_data, test_cfg)
-
-                print("JoeyNMT:")
-                for i, (hyp, token,
-                        score) in enumerate(zip_longest(hypotheses, tokens, scores)):
-                    assert hyp is not None, (i, hyp, token, score)
-                    print(f"#{i + 1}: {hyp}")
-                    if return_prob in ["hyp"]:
-                        if beam_size > 1:  # beam search: sequence-level scores
-                            print(f"\ttokens: {token}\n\tsequence score: {score[0]}")
-                        else:  # greedy: token-level scores
-                            assert len(token) == len(score), (token, score)
-                            print(f"\ttokens: {token}\n\tscores: {score}")
-
-                # reset cache
-                test_data.reset_cache()
-
-            except (KeyboardInterrupt, EOFError):
-                print("\nBye.")
-                break
+    for pose_file in pose_files:
+        test_data.set_item(pose_file)
+    all_hypotheses, _, _ = _translate_data(test_data, test_cfg)
+    assert len(all_hypotheses) == len(test_data) * n_best
+    for hey in all_hypotheses:
+        print(hey)
+    return all_hypotheses
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser("Pose NMT")
 
     ap.add_argument("config_path", type=str, help="path to YAML config file")
-
+    ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
+    ap.add_argument("pose_path", type=str, help="path to pose")
     args = ap.parse_args()
-    test(
+    if args.mode == "test":
+        score_results = test(
             cfg_file=args.config_path,
             ckpt=None,
-            output_path=None,
             save_attention=None,
-            save_scores=None,
-    )
+            save_scores=None,)
+        update_model_info({"model_dir": "experiment/best.ckpt",
+                           "SymbolScore": score_results["fsw_eval"][1],
+                           "BleuScore": score_results["bleu"][1],
+                           "ChrfScore": score_results["chrf"][1],
+                           "ClipScore": score_results["clip"][1],
+                           "SymbolScore_dev": score_results["fsw_eval"][0],
+                           "BleuScore_dev": score_results["bleu"][0],
+                           "ChrfScore_dev": score_results["chrf"][0],
+                           "ClipScore_dev": score_results["clip"][0],
+                           "token": "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"})
+    else:
+        translate(
+            cfg_file=args.config_path,
+            pose_files=args.pose_path,
+            ckpt=None,
+        )

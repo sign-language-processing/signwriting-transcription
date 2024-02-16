@@ -18,8 +18,8 @@ def ms2frame(ms, frame_rate) -> int:
 
 
 def pose_to_matrix(file_path, start_ms, end_ms):
-    with open(file_path, "rb") as f:
-        pose = Pose.read(f.read())
+    with open(file_path, "rb") as file:
+        pose = Pose.read(file.read())
     frame_rate = 29.97003 if file_path == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
     pose = pose.body.data
     pose = pose.reshape(len(pose), -1)
@@ -30,15 +30,16 @@ def pose_to_matrix(file_path, start_ms, end_ms):
 def load_dataset(folder_name):
     with open(f'{folder_name}/target.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
-
         dataset = []
         for line in reader:
-            pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+            try:
+                pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+            except FileNotFoundError:
+                continue
             pose = pose.filled(fill_value=0)
             utt_id = line['pose'].split('.')[0]
             utt_id = f"{utt_id}({line['start']})"
-            dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text']))))
-
+            dataset.append((utt_id, pose, fsw_cut(swu2fsw(line['text'])), line['split']))
     return dataset
 
 

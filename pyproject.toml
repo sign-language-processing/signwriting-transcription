@@ -13,18 +13,25 @@ dependencies = [
     "tqdm",
     "mediapipe",
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
-    "signwriting-evaluation @ git+https://github.com/RotemZilberman/signwriting-evaluation"
+    "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
+    "google-api-python-client",
+    "pympi-ling",
+    "sentencepiece",
+    "pandas"
 ]
 
 [project.optional-dependencies]
+pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
+pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
+
 dev = [
     "pytest",
     "pylint"
 ]
 
 [tool.poetry.extras]
-pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t"]
-pose_to_vq_to_signwriting = []
+pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
+pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
 
 [tool.yapf]
 based_on_style = "google"
@@ -34,14 +41,22 @@ column_limit = 120
 max-line-length = 120
 disable = [
     "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
     "C0116", # Missing function or method docstring
 ]
+good-names = ["ms"]
 
 [tool.setuptools]
 packages = [
-    "signwriting_transcription"
+    "signwriting_transcription",
+    "signwriting_transcription.pose_to_signwriting",
+    "signwriting_transcription.pose_to_signwriting.data",
+    "signwriting_transcription.pose_to_signwriting.joeynmt_pose",
 ]
 
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = ["signwriting_transcription"]
+
+[project.scripts]
+pose_to_signwriting = "signwriting_transcription.pose_to_signwriting.bin:main"

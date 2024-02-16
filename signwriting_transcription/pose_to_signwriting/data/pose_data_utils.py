@@ -32,15 +32,15 @@ from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 
 def get_zip_manifest(zip_path: Path, npy_root: Optional[Path] = None):
     manifest = {}
-    with zipfile.ZipFile(zip_path, mode="r") as f:
-        info = f.infolist()
+    with zipfile.ZipFile(zip_path, mode="r") as file:
+        info = file.infolist()
     # retrieve offsets
     for i in tqdm(info):
         utt_id = Path(i.filename).stem
         offset, file_size = i.header_offset + 30 + len(i.filename), i.file_size
-        with zip_path.open("rb") as f:
-            f.seek(offset)
-            data = f.read(file_size)
+        with zip_path.open("rb") as file:
+            file.seek(offset)
+            data = file.read(file_size)
             assert len(data) > 1 and _is_npy_data(data), (utt_id, len(data))
         manifest[utt_id] = f"{zip_path.name}:{offset}:{file_size}"
         # sanity check
@@ -53,22 +53,22 @@ def get_zip_manifest(zip_path: Path, npy_root: Optional[Path] = None):
 
 def create_zip(data_root: Path, zip_path: Path):
     paths = list(data_root.glob("*.npy"))
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as f:
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as file:
         for path in tqdm(paths):
             try:
-                f.write(path, arcname=path.name)
-            except (IOError, OSError) as e:  # pylint: disable=broad-except
-                raise IOError(f"{path}") from e
+                file.write(path, arcname=path.name)
+            except (IOError, OSError) as error:  # pylint: disable=broad-except
+                raise IOError(f"{path}") from error
 
 
-def save_tsv(df: pd.DataFrame, path: Path, header: bool = True) -> None:
-    df.to_csv(path.as_posix(),
-              sep="\t",
-              header=header,
-              index=False,
-              encoding="utf-8",
-              escapechar="\\",
-              quoting=csv.QUOTE_NONE)
+def save_tsv(data_frame: pd.DataFrame, path: Path, header: bool = True) -> None:
+    data_frame.to_csv(path.as_posix(),
+                      sep="\t",
+                      header=header,
+                      index=False,
+                      encoding="utf-8",
+                      escapechar="\\",
+                      quoting=csv.QUOTE_NONE)
 
 
 def build_pose_vocab(path):

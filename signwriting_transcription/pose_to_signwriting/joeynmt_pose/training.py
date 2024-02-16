@@ -9,7 +9,6 @@ import math
 from pathlib import Path
 import shutil
 import time
-
 from torch.utils.data import Dataset
 
 from joeynmt.helpers import (
@@ -25,8 +24,8 @@ from joeynmt.helpers import (
 from joeynmt.model import Model, build_model
 from joeynmt.training import TrainManager
 
-from .data import load_pose_data
-from .prediction import predict, test
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.data import load_pose_data
+from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import predict, test
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +36,7 @@ class PoseTrainManager(TrainManager):
     """
     def __init__(self, model: Model, cfg: dict) -> None:
         super().__init__(model, cfg)
-        if not cfg['training'].get('early_stopping_metric', None):
-            self.early_stopping_metric = 'fsw_eval'
+        self.early_stopping_metric = 'fsw_eval'
 
     # pylint: disable=too-many-locals
     def _validate(self, valid_data: Dataset):
@@ -51,8 +49,8 @@ class PoseTrainManager(TrainManager):
                     len(valid_data),
                     self.stats.steps,
                 )
-            except AssertionError as e:
-                logger.warning(e)
+            except AssertionError as error:
+                logger.warning(error)
 
         valid_start_time = time.time()
         (
