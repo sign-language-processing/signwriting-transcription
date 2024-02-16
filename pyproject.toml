@@ -21,6 +21,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
+pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
+
 dev = [
     "pytest",
     "pylint"
