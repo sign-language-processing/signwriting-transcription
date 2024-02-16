@@ -21,6 +21,16 @@ and enforces correctly formatted output generation.
 
 Our factors are: Base symbol, modifier1, modifier2, x position, y position
 
+## TODOs:
+
+- [ ] Retrain VQ model to perform better on hand shapes
+- [ ] Add --source-factors and --target-factors to `train_sockeye_model.sh` as options
+- [ ] Train and compare the following models:
+  - [ ] A model with no factors
+  - [ ] A model with source factors but no target factors
+  - [ ] A model with source and target factors
+  - [ ] A model with target factors but no source factors
+
 ## Steps
 
 ```bash
@@ -46,8 +56,8 @@ python evaluate.py \
   --hypothesis="$MODEL_DIR/test.translations" \
   --reference="$DATA_DIR/parallel/test/target.txt" 
   
-# TokenizedBLEU 6.118
-# CHRF 22.065
-# SymbolsDistances 25.953
-# CLIPScore 85.524
+#TokenizedBLEU 5.776
+#CHRF 22.123
+#SymbolsDistances 22.420
+#CLIPScore 85.616
 ```

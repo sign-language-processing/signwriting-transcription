@@ -8,14 +8,11 @@ from signwriting_evaluation.metrics.clip import SignWritingCLIPScore
 from signwriting_evaluation.metrics.similarity import SignWritingSimilarityMetric
 
 
-@lru_cache(maxsize=1)
 def get_metrics():
-    return [
-        SignWritingBLEU(),
-        SignWritingCHRF(),
-        SignWritingSimilarityMetric(),
-        SignWritingCLIPScore(),
-    ]
+    yield SignWritingBLEU()
+    yield SignWritingCHRF()
+    yield SignWritingSimilarityMetric()
+    yield SignWritingCLIPScore()
 
 
 def load_file(file_path: str):
@@ -28,8 +25,6 @@ def load_file(file_path: str):
 def evaluate(hypotheses: str, reference: str):
     hypotheses = load_file(hypotheses)
     references = load_file(reference)
-
-    assert len(hypotheses) == len(references), "Hypothesis and reference must have the same number of instances"
 
     for metric in get_metrics():
         score = metric.corpus_score(hypotheses=hypotheses, references=[references]) * 100

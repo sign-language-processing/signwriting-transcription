@@ -18,11 +18,15 @@ source activate sockeye
 mkdir -p $2
 
 # Clone sockeye if doesn't exist
-[ ! -d sockeye ] && git clone https://github.com/awslabs/sockeye.git
+[ ! -d sockeye ] && git clone https://github.com/sign-language-processing/sockeye.git
 cd sockeye
 
 pip install -r requirements/requirements.txt
 
+# Install SignWriting evaluation package for optimized metric
+pip install git+https://github.com/sign-language-processing/signwriting
+pip install git+https://github.com/sign-language-processing/signwriting-evaluation
+pip install tensorboard
 
 function find_source_files() {
     local directory=$1
@@ -47,7 +51,6 @@ MODEL_DIR="$2/model"
 rm -rf $MODEL_DIR
 
 # batch size refers to number of target tokens
-# TODO change optimized-metric
 python -m sockeye.train \
   -d $TRAIN_DATA_DIR \
   --weight-tying-type none \
@@ -56,7 +59,7 @@ python -m sockeye.train \
   --target-factors-combine sum \
   --validation-source $1/dev/source_0.txt --validation-source-factors $(find_source_files "$1/dev") \
   --validation-target $1/dev/target_0.txt --validation-target-factors $(find_target_files "$1/dev") \
-  --optimized-metric chrf \
+  --optimized-metric signwriting-similarity \
   --decode-and-evaluate 500 \
   --checkpoint-interval 500 \
   --max-num-checkpoint-not-improved 20 \
