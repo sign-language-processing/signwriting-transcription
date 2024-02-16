@@ -32,8 +32,8 @@ def main():
     args = get_args()
     print('Downloading model...')
     os.makedirs("experiment", exist_ok=True)
-    hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, output_dir="experiment",
-                    file_name="best.ckpt")
+    hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
+    os.rename(f'experiment/{args.model}', 'experiment/best.ckpt')
     build_pose_vocab(Path('experiment/spm_bpe1182.vocab').absolute())
     create_test_config('experiment', 'experiment')
 

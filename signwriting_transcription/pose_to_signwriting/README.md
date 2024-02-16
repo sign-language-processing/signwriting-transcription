@@ -3,6 +3,18 @@
 We adapt the JoeyNMT framework to develop a Neural Machine Translation (NMT) model for
 transcribing human poses to SignWriting, a visual writing system for sign languages.
 
+## Usage
+```
+git clone https://github.com/sign-language-processing/signwriting-transcription.git
+cd signwriting-transcription
+pip install .[dev,pose_to_signwriting]
+cd ..
+```
+To translate pose file to signwriting fsw format
+```
+pose_to_signwriting --model="{model_number}.ckpt" --pose="example.pose" --elan="example.eaf"
+```
+
 ## Key Modifications
 
 * Preprocessing:
