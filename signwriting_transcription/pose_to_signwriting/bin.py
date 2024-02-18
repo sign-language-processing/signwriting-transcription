@@ -20,7 +20,7 @@ HUGGINGFACE_REPO_ID = "ohadlanger/signwriting_transcription"
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', required=True, type=str,
+    parser.add_argument('--model', required=True, type=str, default='359a544.ckpt',
                         help='model to use')
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
@@ -32,8 +32,9 @@ def main():
     args = get_args()
     print('Downloading model...')
     os.makedirs("experiment", exist_ok=True)
-    hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
-    os.rename(f'experiment/{args.model}', 'experiment/best.ckpt')
+    if not os.path.exists(f'experiment/{args.model}'):
+        hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
+        os.symlink(f'experiment/{args.model}', 'experiment/best.ckpt')
     build_pose_vocab(Path('experiment/spm_bpe1182.vocab').absolute())
     create_test_config('experiment', 'experiment')
 
