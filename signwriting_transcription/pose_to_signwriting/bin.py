@@ -34,7 +34,8 @@ def main():
     os.makedirs("experiment", exist_ok=True)
     if not os.path.exists(f'experiment/{args.model}'):
         hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
-        os.symlink(f'experiment/{args.model}', 'experiment/best.ckpt')
+        full_path = str(Path('experiment').absolute())
+        os.symlink(f'{full_path}/{args.model}', f'{full_path}/best.ckpt')
     build_pose_vocab(Path('experiment/spm_bpe1182.vocab').absolute())
     create_test_config('experiment', 'experiment')
 
