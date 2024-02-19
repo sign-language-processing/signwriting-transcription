@@ -35,7 +35,11 @@ def main():
 
         hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
         full_path = str(Path('experiment').absolute())
-        os.symlink(f'{full_path}/{args.model}', f'{full_path}/best.ckpt')
+        best_ckpt_path = f'{full_path}/best.ckpt'
+        # remove symlink if exists
+        if os.path.exists(best_ckpt_path):
+            os.remove(best_ckpt_path)
+        os.symlink(f'{full_path}/{args.model}', best_ckpt_path)
     build_pose_vocab(Path('experiment/spm_bpe1182.vocab').absolute())
     create_test_config('experiment', 'experiment')
 
