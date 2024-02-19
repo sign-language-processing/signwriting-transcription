@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
+import os
 from pathlib import Path
 
-import os
-from tqdm import tqdm
 import numpy as np
 import pympi
-from huggingface_hub import hf_hub_download
+from tqdm import tqdm
 
-from signwriting_transcription.pose_to_signwriting.data.preprocessing import preprocess
-from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import build_pose_vocab
-from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_to_matrix
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_to_matrix
+from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import build_pose_vocab
+from signwriting_transcription.pose_to_signwriting.data.preprocessing import preprocess
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import translate
 
 HUGGINGFACE_REPO_ID = "ohadlanger/signwriting_transcription"
@@ -33,6 +32,9 @@ def main():
     print('Downloading model...')
     os.makedirs("experiment", exist_ok=True)
     if not os.path.exists(f'experiment/{args.model}'):
+        # pylint: disable=import-outside-toplevel
+        from huggingface_hub import hf_hub_download
+
         hf_hub_download(repo_id=HUGGINGFACE_REPO_ID, filename=args.model, repo_type='space', local_dir='experiment')
         full_path = str(Path('experiment').absolute())
         os.symlink(f'{full_path}/{args.model}', f'{full_path}/best.ckpt')
