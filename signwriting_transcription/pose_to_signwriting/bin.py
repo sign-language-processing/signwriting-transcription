@@ -19,11 +19,9 @@ HUGGINGFACE_REPO_ID = "ohadlanger/signwriting_transcription"
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', required=True, type=str, default='359a544.ckpt',
-                        help='model to use')
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
-
+    parser.add_argument('--model', type=str, default='359a544.ckpt', help='model to use')
     return parser.parse_args()
 
 
