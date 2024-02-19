@@ -1,26 +1,31 @@
 import argparse
 from pathlib import Path
 
-from pose_format.utils.generic import reduce_holistic
 from pose_format import Pose
-from tqdm import tqdm
+from pose_format.utils.generic import reduce_holistic
 from sign_vq.data.normalize import pre_process_mediapipe, normalize_mean_std
+from tqdm import tqdm
 
 
-def preprocess(src_dir, trg_dir, normalization=True):
+def preprocess_single_file(src_file: Path, trg_file: Path, normalization=True):
+    with open(src_file, 'rb') as pose_file:
+        pose = Pose.read(pose_file.read())
+    if normalization:
+        pose = pre_process_mediapipe(pose)
+        pose = normalize_mean_std(pose)
+    else:
+        pose = reduce_holistic(pose)
+    with open(trg_file, 'wb') as pose_file:
+        pose.write(pose_file)
+
+
+def preprocess(src_dir: Path, trg_dir: Path, normalization=True):
     src_dir = Path(src_dir)
     trg_dir = Path(trg_dir)
     trg_dir.mkdir(parents=True, exist_ok=True)
-    for path in tqdm(src_dir.glob("*.pose")):
-        with open(src_dir / path.name, 'rb') as pose_file:
-            pose = Pose.read(pose_file.read())
-        if normalization:
-            pose = pre_process_mediapipe(pose)
-            pose = normalize_mean_std(pose)
-        else:
-            pose = reduce_holistic(pose)
-        with open(trg_dir / path.name, 'wb') as pose_file:
-            pose.write(pose_file)
+    for src_file in tqdm(src_dir.glob("*.pose")):
+        trg_file = trg_dir / src_file.name
+        preprocess_single_file(src_file, trg_file, normalization)
 
 
 def main():

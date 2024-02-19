@@ -9,7 +9,7 @@ import math
 import time
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -497,7 +497,7 @@ def test(
 
 def translate(
     cfg_file: str,
-    pose_files:list[str],
+    pose_files:list[Union[str, Path]],
     ckpt: str = None,
 ) -> List[str]:
     """
@@ -585,7 +585,7 @@ def translate(
 
     n_best = test_cfg.get("n_best", 1)
     for pose_file in pose_files:
-        test_data.set_item(pose_file)
+        test_data.set_item(str(pose_file))
     all_hypotheses, _, _ = _translate_data(test_data, test_cfg)
     assert len(all_hypotheses) == len(test_data) * n_best
     for hey in all_hypotheses:
