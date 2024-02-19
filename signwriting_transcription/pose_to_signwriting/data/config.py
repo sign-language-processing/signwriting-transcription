@@ -21,7 +21,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             lang: "en_ng"
             num_freq: 534                # number of frequencies of audio inputs
             max_length: 3000            # much longer than text sequence!
-            min_length: 10              # have to be specified so that 1d-conv works!
+            min_length: 1              # have to be specified so that 1d-conv works!
             level: "frame"              # Here we specify we're working on BPEs.
             tokenizer_type: "pose"
             augment: True
@@ -151,7 +151,7 @@ def create_test_config(data_path="/output/poses", experiment_dir='/model/poses')
             lang: "en_ng"
             num_freq: 534                # number of frequencies of audio inputs
             max_length: 3000            # much longer than text sequence!
-            min_length: 10              # have to be specified so that 1d-conv works!
+            min_length: 1              # have to be specified so that 1d-conv works!
             level: "frame"              # Here we specify we're working on BPEs.
             tokenizer_type: "pose"
             augment: True
