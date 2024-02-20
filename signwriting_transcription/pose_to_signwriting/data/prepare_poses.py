@@ -96,10 +96,10 @@ def process(args):
     print(f"Create pose {name} dataset.")
 
     print("Fetching train split ...")
-    dataset = load_dataset(dataset_root)
+    dataset = load_dataset(dataset_root, dataset_root)
 
     if data_segment:
-        segment_dataset = load_dataset(data_segment)
+        segment_dataset = load_dataset(data_segment, dataset_root)
         for instance in segment_dataset:
             instance[0] = f"seg_{instance[0]}"
             instance[3] = 'train' if instance[3] == 'test' else instance[3]

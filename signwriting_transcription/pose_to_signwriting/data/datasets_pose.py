@@ -27,13 +27,13 @@ def pose_to_matrix(file_path, start_ms, end_ms):
     return pose
 
 
-def load_dataset(folder_name):
-    with open(f'{folder_name}/target.csv', 'r', encoding='utf-8') as csvfile:
+def load_dataset(target_folder, data_folder):
+    with open(f'{target_folder}/target.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         dataset = []
         for line in reader:
             try:
-                pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+                pose = pose_to_matrix(f"{data_folder}/{line['pose']}", line['start'], line['end'])
             except FileNotFoundError:
                 continue
             pose = pose.filled(fill_value=0)
