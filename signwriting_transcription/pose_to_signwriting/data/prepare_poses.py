@@ -100,10 +100,13 @@ def process(args):
 
     if data_segment:
         segment_dataset = load_dataset(data_segment, dataset_root)
+        modified_segment_dataset = []
         for instance in segment_dataset:
+            instance = list(instance)
             instance[0] = f"seg_{instance[0]}"
             instance[3] = 'train' if instance[3] == 'test' else instance[3]
-        dataset.extend(segment_dataset)
+            modified_segment_dataset.append(tuple(instance))
+        dataset.extend(modified_segment_dataset)
 
     print("Extracting pose features ...")
     for instance in dataset:
