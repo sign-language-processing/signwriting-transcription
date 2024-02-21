@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
     parser.add_argument('--model', type=str, default='bc2de71.ckpt', help='model to use')
     parser.add_argument('--strategies', required=False, type=str, default='tight',
-                        options=['tight', 'wide'], help='strategy to use')
+                        choices=['tight', 'wide'], help='strategy to use')
     return parser.parse_args()
 
 
@@ -74,12 +74,16 @@ def main():
     temp_files = []
     start = 0
     for index, segment in tqdm(enumerate(sign_annotations)):
+        end = sign_annotations[index + 1][0] if index + 1 < len(sign_annotations) else None
         if args.strategies == 'wide':
-            end = (sign_annotations[index + 1][0] + segment[1]) // 2 if index + 1 < len(sign_annotations) else None
+            end = (end + segment[1]) // 2 if index + 1 < len(sign_annotations) else None
             np_pose = pose_to_matrix(temp_pose_path, start, end).filled(fill_value=0)
             start = end
         else:
-            np_pose = pose_to_matrix(temp_pose_path, segment[0], segment[1]).filled(fill_value=0)
+            end = end if end is not None else segment[1] + 300
+            np_pose = pose_to_matrix(temp_pose_path, segment[0] - (segment[0] - start) * 0.25
+                                     , segment[1] + (end - segment[1]) * 0.25).filled(fill_value=0)
+            start = segment[1]
         pose_path = temp_dir / f'{index}.npy'
         np.save(pose_path, np_pose)
         temp_files.append(pose_path)
