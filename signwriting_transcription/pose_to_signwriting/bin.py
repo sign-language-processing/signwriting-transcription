@@ -21,7 +21,9 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
-    parser.add_argument('--model', type=str, default='359a544.ckpt', help='model to use')
+    parser.add_argument('--model', type=str, default='bc2de71.ckpt', help='model to use')
+    parser.add_argument('--strategies', required=False, type=str, default='tight',
+                        options=['tight', 'wide'], help='strategy to use')
     return parser.parse_args()
 
 
@@ -66,12 +68,18 @@ def main():
 
     print('Preprocessing pose.....')
     temp_pose_path = temp_dir / 'pose.pose'
-    preprocess_single_file(args.pose, temp_pose_path, normalization=False)
+    preprocess_single_file(args.pose, temp_pose_path, normalization=True)
 
     print('Predicting signs...')
     temp_files = []
+    start = 0
     for index, segment in tqdm(enumerate(sign_annotations)):
-        np_pose = pose_to_matrix(temp_pose_path, segment[0], segment[1]).filled(fill_value=0)
+        if args.strategies == 'wide':
+            end = (sign_annotations[index + 1][0] + segment[1]) // 2 if index + 1 < len(sign_annotations) else None
+            np_pose = pose_to_matrix(temp_pose_path, start, end).filled(fill_value=0)
+            start = end
+        else:
+            np_pose = pose_to_matrix(temp_pose_path, segment[0], segment[1]).filled(fill_value=0)
         pose_path = temp_dir / f'{index}.npy'
         np.save(pose_path, np_pose)
         temp_files.append(pose_path)

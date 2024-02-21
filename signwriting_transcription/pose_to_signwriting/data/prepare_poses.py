@@ -83,8 +83,8 @@ def get_split_data(dataset, feature_root, pumping):
 
 def process(args):
     # pylint: disable=too-many-locals
-    dataset_root, data_root, name, tokenizer_type, pumping = (
-        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, args.pumping)
+    dataset_root, data_root, name, tokenizer_type, data_segment, pumping = (
+        args.dataset_root, args.data_root, args.dataset_name, args.tokenizer_type, args.data_segment, args.pumping)
     cur_root = Path(data_root).absolute()
     cur_root = cur_root / name
 
@@ -96,7 +96,17 @@ def process(args):
     print(f"Create pose {name} dataset.")
 
     print("Fetching train split ...")
-    dataset = load_dataset(dataset_root)
+    dataset = load_dataset(dataset_root, dataset_root)
+    if data_segment:
+        segment_dataset = load_dataset(data_segment, dataset_root)
+        modified_segment_dataset = []
+        for instance in segment_dataset:
+            instance = list(instance)
+            instance[0] = f"seg_{instance[0]}"
+            instance[3] = 'train' if instance[3] == 'test' else instance[3]
+            dataset.extend(segment_dataset)
+            modified_segment_dataset.append(tuple(instance))
+        dataset.extend(modified_segment_dataset)
 
     print("Extracting pose features ...")
     for instance in dataset:
@@ -141,6 +151,7 @@ def main():
     parser.add_argument("--dataset-root", required=True, type=str)
     parser.add_argument("--dataset-name", required=True, type=str)
     parser.add_argument("--tokenizer-type", required=True, type=str)
+    parser.add_argument("--data-segment", required=False, type=str, default=None)
     parser.add_argument("--pumping", required=False, type=str, default=True)
     args = parser.parse_args()
     process(args)
