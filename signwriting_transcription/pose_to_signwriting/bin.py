@@ -7,15 +7,17 @@ from pathlib import Path
 
 import numpy as np
 import pympi
+from pose_format import Pose
 from tqdm import tqdm
 
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
-from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_to_matrix
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_to_matrix, frame2ms
 from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import build_pose_vocab
 from signwriting_transcription.pose_to_signwriting.data.preprocessing import preprocess_single_file
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import translate
 
 HUGGINGFACE_REPO_ID = "ohadlanger/signwriting_transcription"
+PADDING_PACTOR = 0.25  # padding factor for tight strategy, 25% padding from both sides of the segment
 
 
 def get_args():
@@ -24,7 +26,7 @@ def get_args():
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
     parser.add_argument('--model', type=str, default='bc2de71.ckpt', help='model to use')
     parser.add_argument('--strategies', required=False, type=str, default='tight',
-                        choices=['tight', 'wide'], help='strategy to use')
+                        choices=['tight', 'wide'], help='segmentation strategy to use')
     return parser.parse_args()
 
 
@@ -72,16 +74,21 @@ def main():
     print('Predicting signs...')
     temp_files = []
     start = 0
+    # get pose length in ms
+    pose_length = frame2ms(len(preprocessed_pose.body.data), preprocessed_pose.body.fps)
     for index, segment in tqdm(enumerate(sign_annotations)):
-        end = sign_annotations[index + 1][0] if index + 1 < len(sign_annotations) else None
-        if args.strategies == 'wide':
-            end = (end + segment[1]) // 2 if index + 1 < len(sign_annotations) else None
+        if index + 1 < len(sign_annotations):
+            end = sign_annotations[index + 1][0]
+        else:
+            end = pose_length
+        if args.strategies == 'wide':   # wide strategy - split the all pose between the segments
+            end = (end + segment[1]) // 2
             np_pose = pose_to_matrix(preprocessed_pose, start, end).filled(fill_value=0)
             start = end
-        else:
-            end = end if end is not None else segment[1] + 300
-            np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * 0.25
-                                     , segment[1] + (end - segment[1]) * 0.25).filled(fill_value=0)
+        else:   # tight strategy - add padding(PADDING_PACTOR) to the tight segment
+            # add padding to the segment by the distance between the segments
+            np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * PADDING_PACTOR
+                                     , segment[1] + (end - segment[1]) * PADDING_PACTOR).filled(fill_value=0)
             start = segment[1]
         pose_path = temp_dir / f'{index}.npy'
         np.save(pose_path, np_pose)
