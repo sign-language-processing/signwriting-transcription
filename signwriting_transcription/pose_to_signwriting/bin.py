@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
     parser.add_argument('--model', type=str, default='bc2de71.ckpt', help='model to use')
-    parser.add_argument('--strategies', required=False, type=str, default='tight',
+    parser.add_argument('--strategies', type=str, default='tight',
                         choices=['tight', 'wide'], help='segmentation strategy to use')
     return parser.parse_args()
 
