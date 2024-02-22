@@ -52,14 +52,12 @@ def download_model(experiment_dir: Path, model_name: str):
         create_test_config(str(experiment_dir), str(experiment_dir))
 
 
+# pylint: disable=too-many-locals
 def main():
     args = get_args()
 
     experiment_dir = Path('experiment')
     experiment_dir.mkdir(exist_ok=True)
-
-    temp_dir = tempfile.TemporaryDirectory()
-    temp_path = Path(temp_dir.name)
 
     print('Downloading model...')
     download_model(experiment_dir, args.model)
@@ -72,39 +70,38 @@ def main():
     preprocessed_pose = preprocess_single_file(args.pose, normalization=False)
 
     print('Predicting signs...')
-    temp_files = []
-    start = 0
-    # get pose length in ms
-    pose_length = frame2ms(len(preprocessed_pose.body.data), preprocessed_pose.body.fps)
-    for index, segment in tqdm(enumerate(sign_annotations)):
-        if index + 1 < len(sign_annotations):
-            end = sign_annotations[index + 1][0]
-        else:
-            end = pose_length
-        if args.strategies == 'wide':   # wide strategy - split the all pose between the segments
-            end = (end + segment[1]) // 2
-            np_pose = pose_to_matrix(preprocessed_pose, start, end).filled(fill_value=0)
-            start = end
-        else:   # tight strategy - add padding(PADDING_PACTOR) to the tight segment
-            # add padding to the segment by the distance between the segments
-            np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * PADDING_PACTOR
-                                     , segment[1] + (end - segment[1]) * PADDING_PACTOR).filled(fill_value=0)
-            start = segment[1]
-        pose_path = temp_path / f'{index}.npy'
-        np.save(pose_path, np_pose)
-        temp_files.append(pose_path)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        temp_files = []
+        start = 0
+        pose_length = frame2ms(len(preprocessed_pose.body.data), preprocessed_pose.body.fps)
+        for index, segment in tqdm(enumerate(sign_annotations)):
+            if index + 1 < len(sign_annotations):
+                end = sign_annotations[index + 1][0]
+            else:
+                end = pose_length
+            if args.strategies == 'wide':
+                end = (end + segment[1]) // 2
+                np_pose = pose_to_matrix(preprocessed_pose, start, end).filled(fill_value=0)
+                start = end
+            else:
+                np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * PADDING_PACTOR,
+                                         segment[1] + (end - segment[1]) * PADDING_PACTOR).filled(fill_value=0)
+                start = segment[1]
+            pose_path = temp_path / f'{index}.npy'
+            np.save(pose_path, np_pose)
+            temp_files.append(pose_path)
 
-    hyp_list = translate('experiment/config.yaml', temp_files)
+        hyp_list = translate('experiment/config.yaml', temp_files)
 
-    for index, segment in enumerate(sign_annotations):
-        eaf.remove_annotation('SIGN', segment[0])
-        eaf.add_annotation('SIGN', segment[0], segment[1], hyp_list[index])
-    eaf.to_file(args.elan)
+        for index, segment in enumerate(sign_annotations):
+            eaf.remove_annotation('SIGN', segment[0])
+            eaf.add_annotation('SIGN', segment[0], segment[1], hyp_list[index])
+        eaf.to_file(args.elan)
 
-    print('Cleaning up...')
-    for temp_file in temp_files:
-        temp_file.unlink()
-    temp_path.rmdir()
+        print('Cleaning up...')
+        for temp_file in temp_files:
+            temp_file.unlink()
 
 
 if __name__ == '__main__':
