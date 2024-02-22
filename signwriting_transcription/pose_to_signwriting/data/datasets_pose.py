@@ -1,5 +1,7 @@
 import csv
 import re
+from typing import Union
+
 import numpy as np
 from pose_format import Pose
 from signwriting.formats.swu_to_fsw import swu2fsw
@@ -17,14 +19,16 @@ def ms2frame(ms, frame_rate) -> int:
     return int(ms / 1000 * frame_rate)
 
 
-def pose_to_matrix(file_path, start_ms=0, end_ms=None):
-    with open(file_path, "rb") as file:
-        pose = Pose.read(file.read())
-    frame_rate = 29.97003 if file_path == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
+def pose_to_matrix(file_path_or_pose: Union[str, Pose], start_ms, end_ms):
+    if isinstance(file_path_or_pose, str):
+        with open(file_path_or_pose, "rb") as file:
+            pose = Pose.read(file.read())
+    else:
+        pose = file_path_or_pose
+    frame_rate = 29.97003 if file_path_or_pose == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
     pose = pose.body.data
     pose = pose.reshape(len(pose), -1)
-    pose = pose[ms2frame(start_ms, frame_rate):ms2frame(end_ms, frame_rate)] if (
-            end_ms is not None) else pose[ms2frame(start_ms, frame_rate):]
+    pose = pose[ms2frame(start_ms, frame_rate):ms2frame(end_ms, frame_rate)]
     return pose
 
 

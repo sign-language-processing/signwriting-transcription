@@ -7,7 +7,7 @@ from sign_vq.data.normalize import pre_process_mediapipe, normalize_mean_std
 from tqdm import tqdm
 
 
-def preprocess_single_file(src_file: Path, trg_file: Path, normalization=True):
+def preprocess_single_file(src_file: Path, normalization=True):
     with open(src_file, 'rb') as pose_file:
         pose = Pose.read(pose_file.read())
     if normalization:
@@ -15,8 +15,8 @@ def preprocess_single_file(src_file: Path, trg_file: Path, normalization=True):
         pose = normalize_mean_std(pose)
     else:
         pose = reduce_holistic(pose)
-    with open(trg_file, 'wb') as pose_file:
-        pose.write(pose_file)
+
+    return pose
 
 
 def preprocess(src_dir: Path, trg_dir: Path, normalization=True):
@@ -25,7 +25,9 @@ def preprocess(src_dir: Path, trg_dir: Path, normalization=True):
     trg_dir.mkdir(parents=True, exist_ok=True)
     for src_file in tqdm(src_dir.glob("*.pose")):
         trg_file = trg_dir / src_file.name
-        preprocess_single_file(src_file, trg_file, normalization)
+        preprocessed_pose = preprocess_single_file(src_file, normalization)
+        with open(trg_file, 'wb') as pose_file:
+            preprocessed_pose.write(pose_file)
 
 
 def main():
