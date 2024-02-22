@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 import pympi
-from pose_format import Pose
 from tqdm import tqdm
 
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
@@ -59,7 +58,8 @@ def main():
     experiment_dir = Path('experiment')
     experiment_dir.mkdir(exist_ok=True)
 
-    temp_dir = Path(tempfile.TemporaryDirectory().name)
+    temp_dir = tempfile.TemporaryDirectory()
+    temp_path = Path(temp_dir.name)
 
     print('Downloading model...')
     download_model(experiment_dir, args.model)
@@ -90,7 +90,7 @@ def main():
             np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * PADDING_PACTOR
                                      , segment[1] + (end - segment[1]) * PADDING_PACTOR).filled(fill_value=0)
             start = segment[1]
-        pose_path = temp_dir / f'{index}.npy'
+        pose_path = temp_path / f'{index}.npy'
         np.save(pose_path, np_pose)
         temp_files.append(pose_path)
 
@@ -104,7 +104,7 @@ def main():
     print('Cleaning up...')
     for temp_file in temp_files:
         temp_file.unlink()
-    temp_dir.rmdir()
+    temp_path.rmdir()
 
 
 if __name__ == '__main__':
