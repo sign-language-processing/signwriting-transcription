@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -54,8 +55,7 @@ def main():
     experiment_dir = Path('experiment')
     experiment_dir.mkdir(exist_ok=True)
 
-    temp_dir = experiment_dir / 'temp'
-    temp_dir.mkdir(exist_ok=True)
+    temp_dir = Path(tempfile.TemporaryDirectory().name)
 
     print('Downloading model...')
     download_model(experiment_dir, args.model)
@@ -65,13 +65,12 @@ def main():
     sign_annotations = eaf.get_annotation_data_for_tier('SIGN')
 
     print('Preprocessing pose.....')
-    temp_pose_path = temp_dir / 'pose.pose'
-    preprocess_single_file(args.pose, temp_pose_path, normalization=False)
+    preprocessed_pose = preprocess_single_file(args.pose, normalization=False)
 
     print('Predicting signs...')
     temp_files = []
     for index, segment in tqdm(enumerate(sign_annotations)):
-        np_pose = pose_to_matrix(temp_pose_path, segment[0], segment[1]).filled(fill_value=0)
+        np_pose = pose_to_matrix(preprocessed_pose, segment[0], segment[1]).filled(fill_value=0)
         pose_path = temp_dir / f'{index}.npy'
         np.save(pose_path, np_pose)
         temp_files.append(pose_path)
@@ -84,7 +83,6 @@ def main():
     eaf.to_file(args.elan)
 
     print('Cleaning up...')
-    temp_pose_path.unlink()
     for temp_file in temp_files:
         temp_file.unlink()
     temp_dir.rmdir()
