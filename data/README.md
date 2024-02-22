@@ -29,6 +29,14 @@ with open('example.posebody', 'wb') as pose_file:
     pose.write(pose_file)
 ```
 
+## Automatic Segmentation
+
+Most annotations come from single sign videos with the annotation spanning the entire video. 
+However, in real use cases, we would like to transcribe continuous signing, and training on full single-sign videos might not yield correct results.
+
+We automatically segment the single-sign videos using [sign-language-processing/segmentation](https://github.com/sign-language-processing/segmentation)
+to extract the sign boundary. Where successful, we record the new sign segments in data_segmentation.csv and use them for additional training data.
+
 ## Issues
 
 - `.pose` files are not normalized, and are not centered around the origin.
