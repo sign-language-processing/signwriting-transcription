@@ -28,7 +28,3 @@ transcriptions.
   with [SignWriting transcriptions in SignBank](https://www.signbank.org/signpuddle2.0/index.php?ui=4&sgn=49).
 
 (can also add around 2300 videos from the Vokabeltrainer)
-
-## License
-
-This project is licensed under the MIT License.
