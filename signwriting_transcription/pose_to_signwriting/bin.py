@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pympi
+from pose_format import Pose
 from tqdm import tqdm
 
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
@@ -24,7 +25,7 @@ def get_args():
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--elan', required=True, type=str, help='path to elan file')
     parser.add_argument('--model', type=str, default='bc2de71.ckpt', help='model to use')
-    parser.add_argument('--strategies', type=str, default='tight',
+    parser.add_argument('--strategy', type=str, default='tight',
                         choices=['tight', 'wide'], help='segmentation strategy to use')
     return parser.parse_args()
 
@@ -52,7 +53,32 @@ def download_model(experiment_dir: Path, model_name: str):
         create_test_config(str(experiment_dir), str(experiment_dir))
 
 
-# pylint: disable=too-many-locals
+def preprocessing_signs(preprocessed_pose: Pose, sign_annotations: list, strategy: str, temp_dir: str):
+    temp_files = []  # list of temporary files
+    start_point = 0
+    temp_path = Path(temp_dir)
+    # get pose length in ms
+    pose_length = frame2ms(len(preprocessed_pose.body.data), preprocessed_pose.body.fps)
+    for index, (sign_start, sign_end, _) in tqdm(enumerate(sign_annotations)):
+        if index + 1 < len(sign_annotations):
+            end_point = sign_annotations[index + 1][0]
+        else:
+            end_point = pose_length
+        if strategy == 'wide':  # wide strategy - split the all pose between the segments
+            end_point = (end_point + sign_start) // 2
+            np_pose = pose_to_matrix(preprocessed_pose, start_point, end_point).filled(fill_value=0)
+            start_point = end_point
+        else:  # tight strategy - add padding(PADDING_PACTOR) to the tight segment
+            # add padding to the segment by the distance between the segments
+            np_pose = pose_to_matrix(preprocessed_pose, sign_start - (sign_start - start_point) * PADDING_PACTOR,
+                                     sign_end + (end_point - sign_end) * PADDING_PACTOR).filled(fill_value=0)
+            start_point = sign_end
+        pose_path = temp_path / f'{index}.npy'
+        np.save(pose_path, np_pose)
+        temp_files.append(pose_path)
+    return temp_files
+
+
 def main():
     args = get_args()
 
@@ -71,37 +97,14 @@ def main():
 
     print('Predicting signs...')
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        temp_files = []
-        start = 0
-        pose_length = frame2ms(len(preprocessed_pose.body.data), preprocessed_pose.body.fps)
-        for index, segment in tqdm(enumerate(sign_annotations)):
-            if index + 1 < len(sign_annotations):
-                end = sign_annotations[index + 1][0]
-            else:
-                end = pose_length
-            if args.strategies == 'wide':
-                end = (end + segment[1]) // 2
-                np_pose = pose_to_matrix(preprocessed_pose, start, end).filled(fill_value=0)
-                start = end
-            else:
-                np_pose = pose_to_matrix(preprocessed_pose, segment[0] - (segment[0] - start) * PADDING_PACTOR,
-                                         segment[1] + (end - segment[1]) * PADDING_PACTOR).filled(fill_value=0)
-                start = segment[1]
-            pose_path = temp_path / f'{index}.npy'
-            np.save(pose_path, np_pose)
-            temp_files.append(pose_path)
-
+        temp_files = preprocessing_signs(preprocessed_pose, sign_annotations, args.strategy, temp_dir)
         hyp_list = translate('experiment/config.yaml', temp_files)
-
-        for index, segment in enumerate(sign_annotations):
-            eaf.remove_annotation('SIGN', segment[0])
-            eaf.add_annotation('SIGN', segment[0], segment[1], hyp_list[index])
-        eaf.to_file(args.elan)
-
         print('Cleaning up...')
-        for temp_file in temp_files:
-            temp_file.unlink()
+
+    for index, (start, end, _) in enumerate(sign_annotations):
+        eaf.remove_annotation('SIGN', start)
+        eaf.add_annotation('SIGN', start, end, hyp_list[index])
+    eaf.to_file(args.elan)
 
 
 if __name__ == '__main__':
