@@ -53,7 +53,7 @@ def download_model(experiment_dir: Path, model_name: str):
         create_test_config(str(experiment_dir), str(experiment_dir))
 
 
-def preprocessing_signs(preprocessed_pose: Pose, sign_annotations: list, strategy: str, temp_dir: str):
+def preprocess_signs(preprocessed_pose: Pose, sign_annotations: list, strategy: str, temp_dir: str):
     temp_files = []  # list of temporary files
     start_point = 0
     temp_path = Path(temp_dir)
@@ -97,9 +97,8 @@ def main():
 
     print('Predicting signs...')
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_files = preprocessing_signs(preprocessed_pose, sign_annotations, args.strategy, temp_dir)
+        temp_files = preprocess_signs(preprocessed_pose, sign_annotations, args.strategy, temp_dir)
         hyp_list = translate('experiment/config.yaml', temp_files)
-        print('Cleaning up...')
 
     for index, (start, end, _) in enumerate(sign_annotations):
         eaf.remove_annotation('SIGN', start)

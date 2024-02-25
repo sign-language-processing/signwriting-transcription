@@ -65,14 +65,14 @@ def get_split_data(dataset, feature_root, pumping):
     if EXPANDED_DATASET > len(all_data) and pumping:
         print("Pumping dataset...")
         backup = all_data.copy()
-        for i in range(EXPANDED_DATASET - len(backup)):
-            utt_id = backup[i % len(backup)]["id"]
-            n_frames = backup[i % len(backup)]["n_frames"]
-            trg = backup[i % len(backup)]["trg"]
-            src = backup[i % len(backup)]["src"]
-            split = backup[i % len(backup)]["split"]
+        for index in range(EXPANDED_DATASET - len(backup)):
+            utt_id = backup[index % len(backup)]["id"]
+            n_frames = backup[index % len(backup)]["n_frames"]
+            trg = backup[index % len(backup)]["trg"]
+            src = backup[index % len(backup)]["src"]
+            split = backup[index % len(backup)]["split"]
             all_data.append({
-                "id": f'{utt_id}({i})',  # unique id
+                "id": f'{utt_id}({index})',  # unique id
                 "src": src,
                 "n_frames": n_frames,
                 "trg": trg,
