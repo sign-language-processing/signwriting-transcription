@@ -38,12 +38,42 @@ function find_target_files() {
     find "$directory" -type f -name 'target_[1-9]*.txt' -printf "$directory/%f "
 }
 
+# Flags for source and target factors
+use_source_factors=false
+use_target_factors=false
+
+# Check command line arguments for --source-factors and --target-factors
+for arg in "$@"
+do
+    if [[ "$arg" == "--source-factors" ]]; then
+        use_source_factors=true
+    elif [[ "$arg" == "--target-factors" ]]; then
+        use_target_factors=true
+    fi
+done
+
+function translation_files() {
+    local name=$1
+    local type=$2    # e.g., "source" or "target"
+    local split=$3   # e.g., "train", "dev", or "test"
+    local use_factors=$4  # Pass 'true' or 'false' to use factors
+
+    # Determine the file finder function based on the type
+    local find_function="find_${type}_files"
+
+    if [[ "$use_factors" == "true" ]]; then
+        echo "--${name} ${split}/${type}_0.txt --${name}-factors $($find_function "$split")"
+    else
+        echo "--${name} ${split}/${type}.txt"
+    fi
+}
+
 # Prepare data
 TRAIN_DATA_DIR="$2/factored_train_data"
 [ ! -d "$TRAIN_DATA_DIR" ] && \
 python -m sockeye.prepare_data \
-  --source $1/train/source_0.txt --source-factors $(find_source_files "$1/train") \
-  --target $1/train/target_0.txt --target-factors $(find_target_files "$1/train")   \
+  $(translation_files "source" "source" "$1/train" $use_source_factors) \
+  $(translation_files "target" "target" "$1/train" $use_target_factors) \
   --output $TRAIN_DATA_DIR
 
 
@@ -57,8 +87,8 @@ python -m sockeye.train \
   --batch-size 128 \
   --source-factors-combine sum \
   --target-factors-combine sum \
-  --validation-source $1/dev/source_0.txt --validation-source-factors $(find_source_files "$1/dev") \
-  --validation-target $1/dev/target_0.txt --validation-target-factors $(find_target_files "$1/dev") \
+  $(translation_files "validation-source" "source" "$1/dev" $use_source_factors) \
+  $(translation_files "validation-target" "target" "$1/dev" $use_target_factors) \
   --optimized-metric signwriting-similarity \
   --decode-and-evaluate 500 \
   --checkpoint-interval 500 \
@@ -68,7 +98,7 @@ python -m sockeye.train \
 # Run predictions on test set
 python -m sockeye.translate \
   -m $MODEL_DIR \
-  --input $1/test/source_0.txt --input-factors $(find_source_files "$1/test") \
+  $(translation_files "input" "source" "$1/test" $use_source_factors) \
   --output $2/test.translations.factors \
   --output-type translation_with_factors
 

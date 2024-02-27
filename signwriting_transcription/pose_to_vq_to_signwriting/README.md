@@ -46,14 +46,17 @@ sbatch prepare_data.sh "$DATA_DIR"
 
 # 2. Trains a translation model
 MODEL_DIR=/shares/volk.cl.uzh/amoryo/checkpoints/sockeye-vq
-sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR"
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/no-factors"
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/source-factors" --source-factors
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/target-factors" --target-factors
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/source-target-factors" --source-factors --target-factors
 
 # 2.1 (Optional) See the validation metrics
-watch tail "$MODEL_DIR/model/metrics" 
+watch tail "$MODEL_DIR/no-factors/model/metrics" 
 
 # 3. Evaluate the model
 python evaluate.py \
-  --hypothesis="$MODEL_DIR/test.translations" \
+  --hypothesis="$MODEL_DIR/no-factors/test.translations" \
   --reference="$DATA_DIR/parallel/test/target.txt" 
   
 #TokenizedBLEU 5.776
