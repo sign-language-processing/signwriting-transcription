@@ -35,9 +35,9 @@ def get_zip_manifest(zip_path: Path, npy_root: Optional[Path] = None):
     with zipfile.ZipFile(zip_path, mode="r") as file:
         info = file.infolist()
     # retrieve offsets
-    for i in tqdm(info):
-        utt_id = Path(i.filename).stem
-        offset, file_size = i.header_offset + 30 + len(i.filename), i.file_size
+    for index in tqdm(info):
+        utt_id = Path(index.filename).stem
+        offset, file_size = index.header_offset + 30 + len(index.filename), index.file_size
         with zip_path.open("rb") as file:
             file.seek(offset)
             data = file.read(file_size)

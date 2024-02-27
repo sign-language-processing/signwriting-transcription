@@ -19,7 +19,11 @@ def ms2frame(ms, frame_rate) -> int:
     return int(ms / 1000 * frame_rate)
 
 
-def pose_to_matrix(file_path_or_pose: Union[str, Pose], start_ms, end_ms):
+def frame2ms(frame, frame_rate) -> int:
+    return int(frame * 1000 / frame_rate)
+
+
+def pose_to_matrix(file_path_or_pose: Union[str, Pose], start_ms, end_ms=None):
     if isinstance(file_path_or_pose, str):
         with open(file_path_or_pose, "rb") as file:
             pose = Pose.read(file.read())
@@ -28,17 +32,19 @@ def pose_to_matrix(file_path_or_pose: Union[str, Pose], start_ms, end_ms):
     frame_rate = 29.97003 if file_path_or_pose == '19097be0e2094c4aa6b2fdc208c8231e.pose' else pose.body.fps
     pose = pose.body.data
     pose = pose.reshape(len(pose), -1)
-    pose = pose[ms2frame(start_ms, frame_rate):ms2frame(end_ms, frame_rate)]
+    start_frame = ms2frame(start_ms, frame_rate)
+    end_frame = ms2frame(end_ms, frame_rate) if end_ms is not None else None
+    pose = pose[start_frame:end_frame]
     return pose
 
 
-def load_dataset(folder_name):
-    with open(f'{folder_name}/target.csv', 'r', encoding='utf-8') as csvfile:
+def load_dataset(target_folder, data_folder):
+    with open(f'{target_folder}/target.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         dataset = []
         for line in reader:
             try:
-                pose = pose_to_matrix(f"{folder_name}/{line['pose']}", line['start'], line['end'])
+                pose = pose_to_matrix(f"{data_folder}/{line['pose']}", line['start'], line['end'])
             except FileNotFoundError:
                 continue
             pose = pose.filled(fill_value=0)
