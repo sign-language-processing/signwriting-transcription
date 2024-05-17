@@ -21,16 +21,6 @@ and enforces correctly formatted output generation.
 
 Our factors are: Base symbol, modifier1, modifier2, x position, y position
 
-## TODOs:
-
-- [ ] Retrain VQ model to perform better on hand shapes
-- [ ] Add --source-factors and --target-factors to `train_sockeye_model.sh` as options
-- [ ] Train and compare the following models:
-  - [ ] A model with no factors
-  - [ ] A model with source factors but no target factors
-  - [ ] A model with source and target factors
-  - [ ] A model with target factors but no source factors
-
 ## Steps
 
 ```bash
@@ -46,10 +36,10 @@ sbatch prepare_data.sh "$DATA_DIR"
 
 # 2. Trains a translation model
 MODEL_DIR=/shares/volk.cl.uzh/amoryo/checkpoints/sockeye-vq
-sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/no-factors"
-sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/source-factors" --source-factors
-sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/target-factors" --target-factors
-sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/source-target-factors" --source-factors --target-factors
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/v2/no-factors" --partition lowprio
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/v2/source-factors" --source-factors --partition lowprio
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/v2/target-factors" --target-factors --partition lowprio # CUDA OOM
+sbatch train_sockeye_model.sh "$DATA_DIR/parallel" "$MODEL_DIR/v2/source-target-factors" --source-factors --target-factors --partition lowprio
 
 # 2.1 (Optional) See the validation metrics
 watch tail "$MODEL_DIR/no-factors/model/metrics" 
@@ -58,9 +48,54 @@ watch tail "$MODEL_DIR/no-factors/model/metrics"
 python evaluate.py \
   --hypothesis="$MODEL_DIR/no-factors/test.translations" \
   --reference="$DATA_DIR/parallel/test/target.txt" 
-  
-#TokenizedBLEU 5.776
-#CHRF 22.123
-#SymbolsDistances 22.420
-#CLIPScore 85.616
 ```
+
+## Results
+
+
+
+### No-factors
+
+TokenizedBLEU 8.893
+CHRF 22.908
+SymbolsDistances 27.820
+CLIPScore 59.170
+
+v2
+TokenizedBLEU 8.632
+CHRF 22.478
+SymbolsDistances 27.261
+CLIPScore 51.128
+
+
+### Source-factors
+
+TokenizedBLEU 9.720
+CHRF 23.604
+SymbolsDistances 30.531
+CLIPScore 69.483
+
+v2
+TokenizedBLEU 9.575
+CHRF 23.671
+SymbolsDistances 31.632
+CLIPScore 69.277
+
+
+### Target-factors
+
+CUDA OOM https://github.com/awslabs/sockeye/issues/1106
+
+### Source-target-factors
+
+TokenizedBLEU 8.936
+CHRF 22.692
+SymbolsDistances 27.656
+CLIPScore 68.514
+
+v2
+TokenizedBLEU 9.262
+CHRF 22.996
+SymbolsDistances 30.376
+CLIPScore 68.880
+

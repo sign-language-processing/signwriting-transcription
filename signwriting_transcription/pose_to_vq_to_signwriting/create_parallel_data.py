@@ -7,6 +7,8 @@ from signwriting.formats.fsw_to_sign import fsw_to_sign
 from signwriting.formats.swu_to_fsw import swu2fsw
 from signwriting.tokenizer import SignWritingTokenizer, normalize_signwriting
 
+csv.field_size_limit(int(1e6))
+
 
 def load_codes(codes_path: Path):
     with open(codes_path, 'r', encoding="utf-8") as f:

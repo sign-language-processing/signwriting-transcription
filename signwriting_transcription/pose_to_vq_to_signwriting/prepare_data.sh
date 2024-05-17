@@ -22,11 +22,11 @@ ZIP_PATH="$1/dataset.zip"
 [ ! -f "$ZIP_PATH" ] && \
 wget -O "$ZIP_PATH" "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media"
 
-# Install SignWriting package
-pip install git+https://github.com/sign-language-processing/signwriting.git
-
-# Install Quantization package
-pip install git+https://github.com/sign-language-processing/sign-vq.git
+## Install SignWriting package
+#pip install git+https://github.com/sign-language-processing/signwriting.git
+#
+## Install Quantization package
+#pip install git+https://github.com/sign-language-processing/sign-vq.git
 
 # Quantize the dataset
 QUANTIZED_PATH="$1/quantized.csv"

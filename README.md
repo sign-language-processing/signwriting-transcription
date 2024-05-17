@@ -14,7 +14,7 @@ This project aims to automatically transcribe SignWriting from isolated/continuo
 ## Tokenization
 
 SignWriting can be tokenized using
-the [SignWriting Tokenizer](https://github.com/sign-language-processing/signbank-plus/blob/main/signbank_plus/signwriting/signwriting_tokenizer.py).
+the [SignWriting Tokenizer](https://github.com/sign-language-processing/signwriting/tree/main/signwriting/tokenizer).
 
 ## Data
 
