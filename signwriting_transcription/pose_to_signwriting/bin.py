@@ -11,7 +11,8 @@ from pose_format import Pose
 from tqdm import tqdm
 
 from signwriting_transcription.pose_to_signwriting.data.config import create_test_config
-from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_to_matrix, frame2ms
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import (pose_to_matrix, frame2ms,
+                                                                              pose_ndarray_to_matrix)
 from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import build_pose_vocab
 from signwriting_transcription.pose_to_signwriting.data.preprocessing import preprocess_single_file
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.prediction import translate
@@ -66,7 +67,8 @@ def preprocessing_signs(preprocessed_pose: Pose, sign_annotations: list, strateg
             end_point = pose_length
         if strategy == 'wide':  # wide strategy - split the all pose between the segments
             end_point = (end_point + sign_start) // 2
-            np_pose = pose_to_matrix(preprocessed_pose, start_point, end_point).filled(fill_value=0)
+            pose, frame_rate = pose_to_matrix(preprocessed_pose)
+            np_pose = pose_ndarray_to_matrix(pose, start_point, frame_rate, end_point).filled(fill_value=0)
             start_point = end_point
         else:  # tight strategy - add padding(PADDING_PACTOR) to the tight segment
             # add padding to the segment by the distance between the segments

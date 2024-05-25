@@ -31,7 +31,7 @@ from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
     build_pose_vocab
 )
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import (
-    load_dataset, extract_to_matrix
+    load_dataset, extract_to_matrix, frame2ms, pose_ndarray_to_matrix
 )
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
@@ -42,6 +42,7 @@ N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
 EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
+
 
 def get_split_data(dataset, feature_root, pumping):
     print("Fetching ZIP manifest...")
@@ -97,13 +98,19 @@ def process(args):
 
     print("Fetching train split ...")
     dataset = load_dataset(dataset_root, dataset_root)
+    for instance in dataset:
+        instance = list(instance)
+        name, start_ms, end_ms, fps = instance[0].split(',')
+        instance[1] = pose_ndarray_to_matrix(instance[1], int(start_ms), float(fps), int(end_ms))
+        instance[0] = name
     if data_segment:
         segment_dataset = load_dataset(data_segment, dataset_root)
         modified_segment_dataset = []
         for instance in segment_dataset:
             instance = list(instance)
             if instance[3] != 'test':
-                instance[0] = f"seg_{instance[0]}"
+                start_ms, end_ms = 0, frame2ms(len(instance[1]), instance[0].split(',')[3])
+                instance[0] = f"{instance[0]},{start_ms},{end_ms}"
                 dataset.extend(segment_dataset)
                 modified_segment_dataset.append(tuple(instance))
         dataset.extend(modified_segment_dataset)
