@@ -98,23 +98,23 @@ def process(args):
 
     print("Fetching train split ...")
     dataset = load_dataset(dataset_root, dataset_root)
-    for instance in dataset:
-        instance = list(instance)
+    for i in range(len(dataset)):
+        instance = list(dataset[i])
         name, start_ms, end_ms, fps = instance[0].split(',')
         instance[1] = pose_ndarray_to_matrix(instance[1], int(start_ms), float(fps), int(end_ms))
         instance[0] = name
+        dataset[i] = tuple(instance)  # Repack instance as a tuple and store it back in dataset
     if data_segment:
         segment_dataset = load_dataset(data_segment, dataset_root)
         modified_segment_dataset = []
         for instance in segment_dataset:
             instance = list(instance)
             if instance[3] != 'test':
-                start_ms, end_ms = 0, frame2ms(len(instance[1]), instance[0].split(',')[3])
+                start_ms, end_ms = 0, frame2ms(len(instance[1]), float(instance[0].split(',')[3]))
                 instance[0] = f"{instance[0]},{start_ms},{end_ms}"
-                dataset.extend(segment_dataset)
                 modified_segment_dataset.append(tuple(instance))
         dataset.extend(modified_segment_dataset)
-
+    print("the length of dataset: ", len(dataset))
     print("Extracting pose features ...")
     for instance in dataset:
         utt_id = instance[0]
