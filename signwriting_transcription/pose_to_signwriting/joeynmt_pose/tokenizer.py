@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import random
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple, Any
 import numpy as np
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 from joeynmt.helpers import ConfigurationError
@@ -19,10 +19,11 @@ from joeynmt.tokenizers import (
     FastBPETokenizer,
     SpeechProcessor
 )
+from numpy import ndarray
 from pose_format.numpy import NumPyPoseBody
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_ndarray_to_matrix
-
+from joeynmt.helpers_for_audio import _get_features_from_zip
 logger = logging.getLogger(__name__)
 
 
@@ -56,25 +57,38 @@ class PoseProcessor(SpeechProcessor):
 
         self.root_path = ""  # assigned later by dataset.__init__()
 
+    def get_metadata(self, data: np.ndarray) -> (
+            Union)[tuple[float, float, float, float, float, ndarray[Any, Any]], None]:
+        if data[0, 0] == -999:
+            start, end, fps, last_segment, next_segment = (float(data[0, 1]), float(data[0, 2]), float(data[0, 3]),
+                                                           float(data[0, 4]), float(data[0, 5]))
+            return start, end, fps, last_segment, next_segment, data[1:]
+        return None
+
     def get_features(self, pose_path: str, buffer_size: float) -> np.ndarray:
-        pose_path, *extra = pose_path.split(":")
-        _, *extra = pose_path.split('.')[0].split(',')
+        _path, *extra = pose_path.split(":")
+        _, *extra = _path.split('.')[0].split(',')
         root_path = Path(self.root_path)
-        _path = root_path / pose_path
+        _path = root_path / _path
         if not _path.is_file():
             raise FileNotFoundError(f"File not found: {_path}")
-        if _path.suffix != ".npy":
-            raise ValueError(f"Invalid file type: {_path}")
 
         if len(extra) == 0:
+            if _path.suffix != ".npy":
+                raise ValueError(f"Invalid file type: {_path}")
             features = np.load(_path.as_posix())
             features = pose_ndarray_to_matrix(features, 0, 29.97003)    # 29.97003 default fps
-        elif len(extra) == 5:
-            start, end, fps, last_segment, next_segment = extra
-            start_addition = (start - last_segment) * buffer_size
-            end_reduction = (next_segment - end) * buffer_size
-            features = np.load(_path.as_posix())
-            features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
+
+        elif len(extra) == 2:
+            assert _path.suffix == ".zip"
+            extra = [int(i) for i in extra]
+            features = _get_features_from_zip(_path, extra[0], extra[1])
+            metadata = self.get_metadata(features)
+            if metadata is not None:
+                start, end, fps, last_segment, next_segment, features = metadata
+                start_addition = (start - last_segment) * buffer_size
+                end_reduction = (next_segment - end) * buffer_size
+                features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
         else:
             raise ValueError("Invalid format")
 

@@ -110,8 +110,13 @@ def process(args):
         for instance in segment_dataset:
             instance = list(instance)
             if instance[3] != 'test':
-                start_ms, end_ms = 0, frame2ms(len(instance[1]), float(instance[0].split(',')[3]))
-                instance[0] = f"{instance[0]},{start_ms},{end_ms}"
+                name, start_ms, end_ms, fps = instance[0].split(',')
+                last_segment, next_segment = 0, frame2ms(len(instance[1]), float(fps))
+                instance[0] = f"seg_{name}"
+                metadata = np.zeros(len(instance[1][0]), dtype=int)
+                metadata[:6] = [-999, frame2ms(0, float(fps)), frame2ms(len(instance[1]), float(fps)), int(fps),
+                                last_segment, next_segment]
+                instance[1] = np.concatenate(([metadata], instance[1]), axis=0)
                 modified_segment_dataset.append(tuple(instance))
         dataset.extend(modified_segment_dataset)
     print("the length of dataset: ", len(dataset))
