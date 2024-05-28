@@ -217,7 +217,7 @@ def predict(
     assert len(valid_iter.dataset) == total_nseqs == len(data), \
         (len(valid_iter.dataset), total_nseqs, len(data))
     assert len(all_outputs) == len(data) * n_best, (len(all_outputs), len(data), n_best)
-
+    normalizer = None
     if compute_loss:
         if normalization == "batch":
             normalizer = total_nseqs
@@ -559,6 +559,7 @@ def translate(
         model.to(device)
 
     tokenizer = build_tokenizer(cfg["data"])
+    sequence_encoder = None
     if task == "MT":
         sequence_encoder = {
             src_cfg["lang"]: partial(src_vocab.sentences_to_ids, bos=False, eos=True),
