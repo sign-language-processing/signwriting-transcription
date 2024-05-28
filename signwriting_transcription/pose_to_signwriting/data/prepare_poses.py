@@ -98,12 +98,12 @@ def process(args):
 
     print("Fetching train split ...")
     dataset = load_dataset(dataset_root, dataset_root)
-    for i in range(len(dataset)):
-        instance = list(dataset[i])
+    for index, instance in enumerate(dataset):
+        instance = list(instance)
         name, start_ms, end_ms, fps = instance[0].split(',')
         instance[1] = pose_ndarray_to_matrix(instance[1], int(start_ms), float(fps), int(end_ms))
         instance[0] = name
-        dataset[i] = tuple(instance)  # Repack instance as a tuple and store it back in dataset
+        dataset[index] = tuple(instance)  # Repack instance as a tuple and store it back in dataset
     if data_segment:
         segment_dataset = load_dataset(data_segment, dataset_root)
         modified_segment_dataset = []
