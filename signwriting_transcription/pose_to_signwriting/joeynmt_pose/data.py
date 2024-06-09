@@ -100,7 +100,7 @@ Optional[BaseDataset]]:
     elif task == "S2T":
         tokenizer["trg"].set_vocab(trg_vocab._itos)
     # pylint: enable=protected-access
-
+    sequence_encoder = None
     # encoding func
     if task == "MT":
         sequence_encoder = {

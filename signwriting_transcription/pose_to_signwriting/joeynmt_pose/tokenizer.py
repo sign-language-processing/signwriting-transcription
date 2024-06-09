@@ -5,11 +5,13 @@ Tokenizer module
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 import numpy as np
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
 from joeynmt.helpers import ConfigurationError
+from joeynmt.helpers_for_audio import _get_features_from_zip
 from joeynmt.tokenizers import (
     BasicTokenizer,
     SentencePieceTokenizer,
@@ -17,11 +19,12 @@ from joeynmt.tokenizers import (
     FastBPETokenizer,
     SpeechProcessor
 )
-from joeynmt.helpers_for_audio import get_features
+from numpy import ndarray
 from pose_format.numpy import NumPyPoseBody
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
-
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_ndarray_to_matrix
 logger = logging.getLogger(__name__)
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements,too-many-instance-attributes
 class PoseProcessor(SpeechProcessor):
@@ -53,6 +56,45 @@ class PoseProcessor(SpeechProcessor):
 
         self.root_path = ""  # assigned later by dataset.__init__()
 
+    def get_metadata(self, data: np.ndarray) -> (
+            Union)[tuple[float, float, float, float, float, ndarray[Any, Any]], None]:
+        if data[0, 0] == -999:  # check if metadata is present
+            start, end, fps, last_segment, next_segment = (float(data[0, 1]), float(data[0, 2]), float(data[0, 3]),
+                                                           float(data[0, 4]), float(data[0, 5])) # extract metadata
+            # return metadata and features without metadata
+            return start, end, fps, last_segment, next_segment, data[1:]
+        return None
+
+    def get_features(self, pose_path: str, buffer_size: float) -> np.ndarray:
+        _path, *extra = pose_path.split(":")
+        root_path = Path(self.root_path)
+        _path = root_path / _path
+        if not _path.is_file():
+            raise FileNotFoundError(f"File not found: {_path}")
+        # the data at the beginning in all ready after holistic normalisation
+        if len(extra) == 0:
+            if _path.suffix != ".npy":
+                raise ValueError(f"Invalid file type: {_path}")
+            features = np.load(_path.as_posix())
+            features = pose_ndarray_to_matrix(features, 0, 29.97003)    # 29.97003 default fps
+
+        # dynamic cutting if needed
+        elif len(extra) == 2:
+            assert _path.suffix == ".zip"
+            extra = [int(i) for i in extra]
+            features = _get_features_from_zip(_path, extra[0], extra[1])
+            metadata = self.get_metadata(features)
+            if metadata is not None:
+                start, end, fps, last_segment, next_segment, features = metadata
+                start_addition = (start - last_segment) * buffer_size
+                end_reduction = (next_segment - end) * buffer_size
+                features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
+        else:
+            raise ValueError("Invalid format")
+
+        assert len(features.shape) == 2, "spectrogram must be a 2-D array."
+        return features
+
     def __call__(self, line: str, is_train: bool = False) -> np.ndarray:
         """
         get features
@@ -62,8 +104,9 @@ class PoseProcessor(SpeechProcessor):
 
         :return: spectrogram in shape (num_frames, num_freq)
         """
-        # lookup
-        item = get_features(self.root_path, line)  # shape = (num_frames, num_freq)
+        # lined is normalised by media-pipe normalisation and after holistic normalisation
+        buffer = random.random() * 0.5  # random buffer size between 0 and 50%
+        item = self.get_features(line, buffer)  # shape = (num_frames, num_freq)
 
         num_frames, num_freq = item.shape
         assert num_freq == self.num_freq
@@ -83,6 +126,8 @@ class PoseProcessor(SpeechProcessor):
 
         # cmvn / specaugment
         # pylint: disable=not-callable
+
+        # add augmentation if needed
         if self.augment:
             item = item.reshape(item.shape[0], 1, -1, 3)
             body = NumPyPoseBody(None, item, np.ones(item.shape[:3]))
@@ -90,11 +135,13 @@ class PoseProcessor(SpeechProcessor):
             item = body.augment2d(rotation_std=rot_std, shear_std=she_std, scale_std=sca_std)
             item = item.data.reshape(item.data.shape[0], -1)
             item.filled(fill_value=0)
+
+        # add noise if needed
         if self.noise:
             gaussian_noise = np.random.normal(0, self.noise_param, item.shape)
             item = item + gaussian_noise
-        return item
 
+        return item
 
     def _filter_too_short_item(self, length: int) -> bool:
         return self.min_length > length > 0
@@ -106,6 +153,7 @@ class PoseProcessor(SpeechProcessor):
         return (f"{self.__class__.__name__}("
                 f"level={self.level}, normalize={self.normalize}, "
                 f"filter_by_length=({self.min_length}, {self.max_length}), ")
+
 
 # pylint: disable=too-many-branches
 class SwuTokenizer(BasicTokenizer):
