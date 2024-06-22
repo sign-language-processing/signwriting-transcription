@@ -73,8 +73,9 @@ def preprocessing_signs(preprocessed_pose: Pose, sign_annotations: list, strateg
         else:  # tight strategy - add padding(PADDING_PACTOR) to the tight segment
             # add padding to the segment by the distance between the segments
             np_pose, frame_rate = pose_to_matrix(preprocessed_pose)
-            np_pose = pose_ndarray_to_matrix(np_pose, sign_start - (sign_start - start_point) * PADDING_PACTOR, frame_rate,
-                                   sign_end + (end_point - sign_end) * PADDING_PACTOR).filled(fill_value=0)
+            np_pose = (pose_ndarray_to_matrix(np_pose, sign_start - (sign_start - start_point) * PADDING_PACTOR,
+                                              frame_rate, sign_end + (end_point - sign_end) * PADDING_PACTOR)
+                       .filled(fill_value=0))
             start_point = sign_end
         pose_path = temp_path / f'{index}.npy'
         np.save(pose_path, np_pose)
