@@ -6,14 +6,6 @@ cd signwriting-transcription
 
 # Install the required packages
 pip install .[dev,pose_to_signwriting]
-pip install ruamel.yaml
-
-# Download and unzip the sign-vq.zip file
-wget 'https://drive.usercontent.google.com/download?id=1V_Af2oqY28QgkE1e8jZzEvuxf6N3bLkB&export=download&authuser=0&confirm=t&uuid=c134a3b0-59c6-4279-b3d9-e918523fd913&at=APZUnTXILGGtZIF-UVbFYXHddcFX%3A1718897741079' -O sign-vq.zip
-unzip sign-vq.zip -d sign-vq
-cd sign-vq
-pip install .
-cd ..
 
 # Download and unzip the transcription data set
 wget -O transcription.zip "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media"
@@ -49,23 +41,7 @@ python signwriting_transcription/pose_to_signwriting/joeynmt_pose/training.py ve
 wget 'https://drive.google.com/uc?export=download&id=1EwgVIAxa_VcPWMtaFXru19ZBqc8NPq8K' -O signwriting_transcription/pose_to_signwriting/joeynmt_pose/token.json
 
 # Modify the config.yaml file to set eval_all_metrics to True
-python - <<EOF
-import ruamel.yaml
-
-file_path = "experiment/config.yaml"
-
-# Load YAML file
-yaml = ruamel.yaml.YAML()
-with open(file_path, 'r') as file:
-    config = yaml.load(file)
-
-# Modify the eval_all_metrics value
-config['testing']['eval_all_metrics'] = True
-
-# Save the updated config back to the file
-with open(file_path, 'w') as file:
-    yaml.dump(config, file)
-EOF
+python signwriting_transcription/pose_to_signwriting/data/config.py --data-path experiment --experiment-dir experiment --test-eval-matrices True
 
 # Run prediction script
 python signwriting_transcription/pose_to_signwriting/joeynmt_pose/prediction.py experiment/config.yaml test none

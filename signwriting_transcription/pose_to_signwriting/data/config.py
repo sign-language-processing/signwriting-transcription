@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 
 
-def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
+def create_config(data_path="/output/poses", experiment_dir='/model/poses', test_eval_matrices='False'):
     data_path = Path(data_path)
     experiment_dir = Path(experiment_dir)
 
@@ -51,7 +51,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
                 pretokenize: "none"
 
     testing:
-        eval_all_metrics: False
+        eval_all_metrics: {test_eval_matrices}
         n_best: 1
         beam_size: 5
         beam_alpha: 1.0
@@ -128,7 +128,8 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses'):
             dropout: 0.1
             layer_norm: "pre"
     """.format(data_dir=data_path.as_posix(),
-               experiment_dir=experiment_dir.as_posix())
+               experiment_dir=experiment_dir.as_posix(),
+               test_eval_matrices=test_eval_matrices)
 
     (data_path / 'config.yaml').write_text(config)
 
@@ -267,8 +268,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-path", "-d", required=True, type=str)
     parser.add_argument("--experiment-dir", "-e", required=True, type=str)
+    parser.add_argument("--test-eval-matrices", required=False, default='False')
     args = parser.parse_args()
-    create_config(args.data_path, args.experiment_dir)
+    create_config(args.data_path, args.experiment_dir, args.test_eval_matrices)
 
 
 if __name__ == '__main__':

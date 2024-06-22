@@ -537,9 +537,9 @@ def translate(
     trg_cfg = cfg["data"]["trg"]
     task = cfg["data"].get("task", "MT").upper()
 
-    pkg_version = make_logger(model_dir, mode="translate")  # version string returned
-    if "joeynmt_version" in cfg:
-        check_version(pkg_version, cfg["joeynmt_version"])
+    # pkg_version = make_logger(model_dir, mode="translate")  # version string returned
+    # if "joeynmt_version" in cfg:
+    #     check_version(pkg_version, cfg["joeynmt_version"])
 
     # when checkpoint is not specified, take latest (best) from model dir
     load_model = load_model if ckpt is None else Path(ckpt)

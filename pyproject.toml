@@ -29,6 +29,7 @@ pose_to_signwriting = [
      # Uploads results to Google Sheets
     "google-auth-oauthlib",
     "google-api-python-client",
+    "ruamel.yaml"
 ]
 pose_to_vq_to_signwriting = [
     "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git" # Used for getting codes from poses
