@@ -9,5 +9,5 @@ PIPELINE_OUTPUT_FILE="output_for_pipeline.log"
 ./pretrain.sh | tee -a $PRETRAIN_OUTPUT_FILE
 # Run the run_bash.sh script, capture both stdout and stderr
 # Display the output on the screen and write to the file
-./pipeline.sh | tee -a $PIPELINE_OUTPUT_FILE
+./fine_tune.sh | tee -a $PIPELINE_OUTPUT_FILE
 ```
