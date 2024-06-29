@@ -21,8 +21,12 @@ from joeynmt.tokenizers import (
 )
 from numpy import ndarray
 from pose_format.numpy import NumPyPoseBody
+from pose_format.utils.generic import reduce_holistic
+
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
+from synthetic_signwriting.generator import SyntheticSignWritingGenerator
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_ndarray_to_matrix
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,9 +83,6 @@ class PoseProcessor(SpeechProcessor):
             return start, end, fps, last_segment, next_segment, data[1:]
 
         if data[0, 0] == -9999:  # check if we want to create synthetic data
-            from synthetic_signwriting.generator import SyntheticSignWritingGenerator
-            from pose_format.utils.generic import reduce_holistic
-
             synthetic = SyntheticSignWritingGenerator()
             synthetic.add_keyframe()
             generated_pose = synthetic.render()

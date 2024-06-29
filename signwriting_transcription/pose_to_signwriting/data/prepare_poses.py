@@ -33,6 +33,7 @@ from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import (
     load_dataset, extract_to_matrix, frame2ms, pose_ndarray_to_matrix
 )
+# pylint: disable=duplicate-code
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
 
@@ -42,7 +43,6 @@ N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
 EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
-
 
 def get_split_data(dataset, feature_root, pumping):
     print("Fetching ZIP manifest...")

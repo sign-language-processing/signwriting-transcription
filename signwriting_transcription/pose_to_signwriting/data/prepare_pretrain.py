@@ -24,15 +24,13 @@ import pandas as pd
 
 from joeynmt.helpers import write_list_to_file
 from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
-    build_sp_model,
     create_zip,
     get_zip_manifest,
     save_tsv,
     build_pose_vocab
 )
-from signwriting_transcription.pose_to_signwriting.data.datasets_pose import (
-    load_dataset, extract_to_matrix, frame2ms, pose_ndarray_to_matrix
-)
+from signwriting_transcription.pose_to_signwriting.data.datasets_pose import extract_to_matrix
+# pylint: disable=duplicate-code
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
 
@@ -42,7 +40,6 @@ N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
 EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
-
 
 def get_split_data(dataset, feature_root):
     print("Fetching ZIP manifest...")
@@ -113,12 +110,6 @@ def process(args):
 
     # Generate joint vocab
     print("Building joint vocab...")
-    kwargs = {
-        'model_type': SP_MODEL_TYPE,
-        'vocab_size': VOCAB_SIZE,
-        'character_coverage': 1.0,
-        'num_workers': N_WORKERS
-    }
     build_pose_vocab(cur_root / f"spm_bpe{VOCAB_SIZE}.vocab")
     print("Done!")
 

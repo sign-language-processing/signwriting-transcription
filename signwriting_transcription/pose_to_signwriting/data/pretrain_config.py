@@ -1,8 +1,8 @@
-# Create the config
 import argparse
 from pathlib import Path
 
 
+# pylint: disable=duplicate-code
 def create_config(data_path="/output/poses", experiment_dir='/model/poses', test_eval_matrices='False',
                   pretrain_model=None):
     data_path = Path(data_path)
