@@ -32,7 +32,7 @@ python signwriting_transcription/pose_to_signwriting/data/prepare_poses.py \
   --data-segment segment_data_set
 
 # Run config script
-python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set/poses --experiment-dir experiment
+python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set/poses --experiment-dir experiment --pretrain-model pretrain_data_set/experiment
 
 # Prepare experiment directory
 mkdir -p experiment
