@@ -143,9 +143,9 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
         Path(cfg["training"]["model_dir"]),
         overwrite=cfg["training"].get("overwrite", False),
     )
-    pkg_version = make_logger(model_dir, mode="train")
-    if "joeynmt_version" in cfg:
-        check_version(pkg_version, cfg["joeynmt_version"])
+    # pkg_version = make_logger(model_dir, mode="train")
+    # if "joeynmt_version" in cfg:
+    #     check_version(pkg_version, cfg["joeynmt_version"])
 
     # write all entries of config to the log
     log_cfg(cfg)

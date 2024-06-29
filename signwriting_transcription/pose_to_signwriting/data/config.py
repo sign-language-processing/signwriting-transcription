@@ -3,10 +3,15 @@ import argparse
 from pathlib import Path
 
 
-def create_config(data_path="/output/poses", experiment_dir='/model/poses', test_eval_matrices='False'):
+def create_config(data_path="/output/poses", experiment_dir='/model/poses', test_eval_matrices='False',
+                  pretrain_model=None):
     data_path = Path(data_path)
     experiment_dir = Path(experiment_dir)
 
+    if pretrain_model is not None:
+        load_model_line = 'load_model: "{pretrain_model}/best.ckpt"'.format(pretrain_model=pretrain_model)
+    else:
+        load_model_line = '# load_model: "{pretrain_model}/best.ckpt"'
     config = """
     name: "poses"
     joeynmt_version: 2.0.0
@@ -63,7 +68,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses', test
             tokenize: "intl"            # `tokenize` option in sacrebleu.corpus_bleu() function (options include: "none" (use for already tokenized test data), "13a" (default minimal tokenizer), "intl" which mostly does punctuation and unicode, etc) 
 
     training:
-        #load_model: "{experiment_dir}/1.ckpt" # if uncommented, load a pre-trained model from this checkpoint
+        {load_model_line}
         random_seed: 42
         optimizer: "adam"
         normalization: "tokens"
@@ -129,7 +134,8 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses', test
             layer_norm: "pre"
     """.format(data_dir=data_path.as_posix(),
                experiment_dir=experiment_dir.as_posix(),
-               test_eval_matrices=test_eval_matrices)
+               test_eval_matrices=test_eval_matrices,
+               load_model_line=load_model_line)
 
     (data_path / 'config.yaml').write_text(config)
 
@@ -269,8 +275,9 @@ def main():
     parser.add_argument("--data-path", "-d", required=True, type=str)
     parser.add_argument("--experiment-dir", "-e", required=True, type=str)
     parser.add_argument("--test-eval-matrices", required=False, default='False')
+    parser.add_argument("--pretrain-model", required=False, default=None)
     args = parser.parse_args()
-    create_config(args.data_path, args.experiment_dir, args.test_eval_matrices)
+    create_config(args.data_path, args.experiment_dir, args.test_eval_matrices, args.pretrain_model)
 
 
 if __name__ == '__main__':

@@ -599,6 +599,7 @@ if __name__ == '__main__':
     ap.add_argument("config_path", type=str, help="path to YAML config file")
     ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
     ap.add_argument("pose_path", type=str, help="path to pose")
+    ap.add_argument("add_to_name", type=str, help="add to name", default="")
     args = ap.parse_args()
     if args.mode == "test":
         score_results = test(
@@ -615,7 +616,9 @@ if __name__ == '__main__':
                            "BleuScore_dev": score_results["bleu"][0],
                            "ChrfScore_dev": score_results["chrf"][0],
                            "ClipScore_dev": score_results["clip"][0],
-                           "token": "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"})
+                           "token": "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"},
+                          args.add_to_name)
+
     else:
         translate(
             cfg_file=args.config_path,

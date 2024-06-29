@@ -1,11 +1,15 @@
 #!/bin/bash
 
-# Clone the repository
-git clone https://github.com/sign-language-processing/signwriting-transcription.git
-cd signwriting-transcription
+PRETRAIN=${1:-false}
 
-# Install the required packages
-pip install .[dev,pose_to_signwriting]
+if [ "$PRETRAIN" != "pretrain" ]; then
+  # Clone the repository
+  git clone https://github.com/sign-language-processing/signwriting-transcription.git
+  cd signwriting-transcription
+
+  # Install the required packages
+  pip install .[dev,pose_to_signwriting]
+fi
 
 # Download and unzip the transcription data set
 wget -O transcription.zip "https://firebasestorage.googleapis.com/v0/b/sign-language-datasets/o/poses%2Fholistic%2Ftranscription.zip?alt=media"
