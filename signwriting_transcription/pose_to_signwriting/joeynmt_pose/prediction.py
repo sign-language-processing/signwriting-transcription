@@ -598,8 +598,8 @@ if __name__ == '__main__':
 
     ap.add_argument("config_path", type=str, help="path to YAML config file")
     ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
-    ap.add_argument("pose_path", type=str, help="path to pose")
-    ap.add_argument("add_to_name", type=str, help="add to name", default="")
+    ap.add_argument("--pose_path", type=str, help="path to pose", default="")
+    ap.add_argument("--add_to_name", type=str, help="add to name", default="")  # Change here
     args = ap.parse_args()
     if args.mode == "test":
         score_results = test(

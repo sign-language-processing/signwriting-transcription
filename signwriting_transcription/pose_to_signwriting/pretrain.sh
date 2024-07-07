@@ -11,7 +11,7 @@ pip install .[dev,pose_to_signwriting]
 python signwriting_transcription/pose_to_signwriting/data/prepare_pretrain.py \
   --data-root pretrain_data_set \
   --dataset-name poses \
-  --dataset-size 1500
+  --dataset-size 5000 \
 
 # Run config script
 python signwriting_transcription/pose_to_signwriting/data/pretrain_config.py --data-path pretrain_data_set/poses --experiment-dir pretrain_data_set/experiment

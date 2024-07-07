@@ -31,6 +31,7 @@ pose_to_signwriting = [
     "google-api-python-client",
     "ruamel.yaml",
     "synthetic-signwriting @ git+https://github.com/sign-language-processing/synthetic-signwriting.git",
+    "pose-anonymization @ git+https://github.com/sign-language-processing/pose-anonymization.git",
 ]
 pose_to_vq_to_signwriting = [
     "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git" # Used for getting codes from poses

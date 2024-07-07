@@ -27,7 +27,6 @@ from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
 from synthetic_signwriting.generator import SyntheticSignWritingGenerator
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_ndarray_to_matrix
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -239,6 +238,14 @@ class SwuTokenizer(BasicTokenizer):
             sequence = self.tokenizer.detokenize(sequence)
         # ensure the string is not empty.
         assert sequence is not None and len(sequence) > 0, sequence
+        if sequence == "SYNTHETIC" and "generated_pose" in self.shared_state.data.keys():
+            generate_sequence = self.shared_state.get("generated_pose")
+            if generate_sequence is None:
+                return sequence
+            generated_right_hand = str(hex(generate_sequence.keyframes[0].left_hand_signwriting))[2:]
+            generated_left_hand = str(hex(generate_sequence.keyframes[0].right_hand_signwriting))[2:]
+            generated_fsw = f'M538x552S2ff00482x483S{generated_right_hand}522x522S{generated_left_hand}455x521'
+            sequence = generated_fsw
         return sequence
 
     def copy_cfg_file(self, model_dir: Path) -> None:

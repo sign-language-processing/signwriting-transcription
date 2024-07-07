@@ -5,12 +5,12 @@ from pathlib import Path
 
 # pylint: disable=duplicate-code
 def create_config(data_path="/output/poses", experiment_dir='/model/poses', test_eval_matrices='False',
-                  pretrain_model=None):
+                  model=None):
     data_path = Path(data_path)
     experiment_dir = Path(experiment_dir)
 
-    if pretrain_model is not None:
-        load_model_line = f'load_model: {pretrain_model}/best.ckpt'
+    if model is not None:
+        load_model_line = f'load_model: {model}/best.ckpt'
     else:
         load_model_line = '# load_model: "{pretrain_model}/best.ckpt"'
     config = """
@@ -276,9 +276,9 @@ def main():
     parser.add_argument("--data-path", "-d", required=True, type=str)
     parser.add_argument("--experiment-dir", "-e", required=True, type=str)
     parser.add_argument("--test-eval-matrices", required=False, default='False')
-    parser.add_argument("--pretrain-model", required=False, default=None)
+    parser.add_argument("--model", required=False, default=None)
     args = parser.parse_args()
-    create_config(args.data_path, args.experiment_dir, args.test_eval_matrices, args.pretrain_model)
+    create_config(args.data_path, args.experiment_dir, args.test_eval_matrices, args.model)
 
 
 if __name__ == '__main__':

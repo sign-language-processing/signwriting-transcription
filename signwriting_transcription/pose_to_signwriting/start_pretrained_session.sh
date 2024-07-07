@@ -10,4 +10,3 @@ PIPELINE_OUTPUT_FILE="output_for_pipeline.log"
 # Run the run_bash.sh script, capture both stdout and stderr
 # Display the output on the screen and write to the file
 ./fine_tune.sh | tee -a $PIPELINE_OUTPUT_FILE
-```
