@@ -116,7 +116,7 @@ bash signwriting_transcription/pose_to_signwriting/pretrained_model.sh
 For activating the fine-tuning process, you can use the following bash script:
 
 ```bash
-bash signwriting_transcription/pose_to_signwriting/fine_tuning.sh
+bash signwriting_transcription/pose_to_signwriting/fine_tuning.sh pretrain
 ```
 
 For uploading the model to the cloud, you can use the following bash script:

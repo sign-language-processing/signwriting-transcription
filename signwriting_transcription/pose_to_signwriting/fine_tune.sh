@@ -3,9 +3,6 @@
 PRETRAIN=${1:-false}
 
 if [ "$PRETRAIN" != "pretrain" ]; then
-  # Clone the repository
-  git clone https://github.com/sign-language-processing/signwriting-transcription.git
-  cd signwriting-transcription
 
   # Install the required packages
   pip install .[dev,pose_to_signwriting]
