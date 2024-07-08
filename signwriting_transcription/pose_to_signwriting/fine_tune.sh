@@ -32,7 +32,7 @@ python signwriting_transcription/pose_to_signwriting/data/prepare_poses.py \
   --data-segment segment_data_set
 
 # Run config script
-python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set/poses --experiment-dir experiment --pretrain-model pretrain_data_set/experiment
+python signwriting_transcription/pose_to_signwriting/data/config.py --data-path vectorized_data_set/poses --experiment-dir experiment --model pretrain_data_set/experiment
 
 # Prepare experiment directory
 mkdir -p experiment
@@ -40,12 +40,3 @@ cp vectorized_data_set/poses/config.yaml experiment/config.yaml
 
 # Run training script
 python signwriting_transcription/pose_to_signwriting/joeynmt_pose/training.py vectorized_data_set/poses/config.yaml
-
-# Download token.json
-wget 'https://drive.google.com/uc?export=download&id=1EwgVIAxa_VcPWMtaFXru19ZBqc8NPq8K' -O signwriting_transcription/pose_to_signwriting/joeynmt_pose/token.json
-
-# Modify the config.yaml file to set eval_all_metrics to True
-python signwriting_transcription/pose_to_signwriting/data/config.py --data-path experiment --experiment-dir experiment --test-eval-matrices True
-
-# Run prediction script
-python signwriting_transcription/pose_to_signwriting/joeynmt_pose/prediction.py experiment/config.yaml test none
