@@ -1,4 +1,6 @@
 #!/bin/bash
+# save the output to a file
+exec > >(tee -a pretain_output.log) 2>&1
 
 # Install the required packages
 pip install .[dev,pose_to_signwriting]

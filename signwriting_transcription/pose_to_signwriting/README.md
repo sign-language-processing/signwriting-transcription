@@ -110,7 +110,7 @@ tensorboard --logdir /content/models/poses/tensorboard
 For training pre-trained model, you can use the following bash script:
 
 ```bash
-bash signwriting_transcription/pose_to_signwriting/pretrained_model.sh
+bash signwriting_transcription/pose_to_signwriting/pretrain.sh
 ```
 
 For activating the fine-tuning process, you can use the following bash script:

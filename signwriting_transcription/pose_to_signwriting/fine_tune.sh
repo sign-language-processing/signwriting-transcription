@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# save the output to a file
+exec > >(tee -a fineTune_output.log) 2>&1
+
 PRETRAIN=${1:-false}
 
 if [ "$PRETRAIN" != "pretrain" ]; then
