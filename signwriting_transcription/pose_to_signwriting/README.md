@@ -124,4 +124,3 @@ For uploading the model to the cloud, you can use the following bash script:
 ```bash
 bash signwriting_transcription/pose_to_signwriting/upload_model.sh {'pretrain' if it is pre-trained model or nothing if it is fine-tuned model}
 ```
-```
