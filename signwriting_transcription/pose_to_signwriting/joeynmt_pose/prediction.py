@@ -599,6 +599,7 @@ if __name__ == '__main__':
     ap.add_argument("config_path", type=str, help="path to YAML config file")
     ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
     ap.add_argument("--pose_path", type=str, help="path to pose", default="")
+    ap.add_argument("--ckpt_dir", type=str, help="path to model checkpoint", default=None)
     ap.add_argument("--add_to_name", type=str, help="add to name", default="")  # Change here
     args = ap.parse_args()
     if args.mode == "test":
@@ -608,7 +609,7 @@ if __name__ == '__main__':
             save_attention=None,
             save_scores=None, )
         # pylint: disable=too-many-function-args
-        update_model_info({"model_dir": "experiment/best.ckpt",
+        update_model_info({"model_dir": f'{args.ckpt_dir}/best.ckpt',
                            "SymbolScore": score_results["fsw_eval"][1],
                            "BleuScore": score_results["bleu"][1],
                            "ChrfScore": score_results["chrf"][1],
