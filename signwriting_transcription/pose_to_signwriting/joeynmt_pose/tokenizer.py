@@ -87,7 +87,7 @@ class PoseProcessor(SpeechProcessor):
             generated_pose = synthetic.render()
             generated_pose = reduce_holistic(generated_pose)
             generated_pose.focus()
-            self.shared_state.set("generated_pose", synthetic)
+            self.shared_state.set("generated_fsw", synthetic.render_fsw())
             generated_pose = generated_pose.body.data
             return generated_pose.reshape(len(generated_pose), -1)
 
@@ -212,16 +212,10 @@ class SwuTokenizer(BasicTokenizer):
     def __call__(self, raw_input: str, is_train: bool = False) -> List[str]:
         """Tokenize"""
         if raw_input == "SYNTHETIC":
-            if "generated_pose" not in self.shared_state.data.keys():
+            if "generated_fsw" not in self.shared_state.data.keys():
                 raw_input = ""
             else:
-                generated_pose = self.shared_state.get("generated_pose")
-                if generated_pose is None:
-                    raise ValueError("Generated pose is not found in shared state.")
-                generated_right_hand = str(hex(generated_pose.keyframes[0].left_hand_signwriting))[2:]
-                generated_left_hand = str(hex(generated_pose.keyframes[0].right_hand_signwriting))[2:]
-                generated_fsw = f'M538x552S2ff00482x483S{generated_right_hand}522x522S{generated_left_hand}455x521'
-                raw_input = generated_fsw
+                raw_input = self.shared_state.get("generated_fsw")
         tokenized = [self.tokenizer.i2s[s] for s in self.tokenizer.tokenize(raw_input)]
         if is_train and self._filter_by_length(len(tokenized)):
             return None
@@ -238,14 +232,8 @@ class SwuTokenizer(BasicTokenizer):
             sequence = self.tokenizer.detokenize(sequence)
         # ensure the string is not empty.
         assert sequence is not None and len(sequence) > 0, sequence
-        if sequence == "SYNTHETIC" and "generated_pose" in self.shared_state.data.keys():
-            generate_sequence = self.shared_state.get("generated_pose")
-            if generate_sequence is None:
-                return sequence
-            generated_right_hand = str(hex(generate_sequence.keyframes[0].left_hand_signwriting))[2:]
-            generated_left_hand = str(hex(generate_sequence.keyframes[0].right_hand_signwriting))[2:]
-            generated_fsw = f'M538x552S2ff00482x483S{generated_right_hand}522x522S{generated_left_hand}455x521'
-            sequence = generated_fsw
+        if sequence == "SYNTHETIC" and "generated_fsw" in self.shared_state.data.keys():
+            sequence = self.shared_state.get("generated_fsw")
         return sequence
 
     def copy_cfg_file(self, model_dir: Path) -> None:
