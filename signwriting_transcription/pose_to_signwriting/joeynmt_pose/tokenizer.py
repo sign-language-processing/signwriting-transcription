@@ -21,9 +21,24 @@ from joeynmt.tokenizers import (
 )
 from numpy import ndarray
 from pose_format.numpy import NumPyPoseBody
+from pose_format.utils.generic import reduce_holistic
+
 from signwriting.tokenizer.signwriting_tokenizer import SignWritingTokenizer
+from synthetic_signwriting.generator import SyntheticSignWritingGenerator
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import pose_ndarray_to_matrix
+
 logger = logging.getLogger(__name__)
+
+
+class SharedState:
+    def __init__(self):
+        self.data = {}
+
+    def get(self, key):
+        return self.data.get(key)
+
+    def set(self, key, value):
+        self.data[key] = value
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements,too-many-instance-attributes
@@ -39,6 +54,7 @@ class PoseProcessor(SpeechProcessor):
             aug_param: float = 0.2,
             noise: bool = False,
             noise_param: float = 0.1,
+            shared_state: SharedState = None,
             **kwargs,
     ):
         super().__init__(**kwargs)
@@ -49,6 +65,7 @@ class PoseProcessor(SpeechProcessor):
         self.aug_param = aug_param
         self.noise = noise
         self.noise_param = noise_param
+        self.shared_state = shared_state
 
         # filter by length
         self.max_length = max_length
@@ -60,9 +77,20 @@ class PoseProcessor(SpeechProcessor):
             Union)[tuple[float, float, float, float, float, ndarray[Any, Any]], None]:
         if data[0, 0] == -999:  # check if metadata is present
             start, end, fps, last_segment, next_segment = (float(data[0, 1]), float(data[0, 2]), float(data[0, 3]),
-                                                           float(data[0, 4]), float(data[0, 5])) # extract metadata
+                                                           float(data[0, 4]), float(data[0, 5]))  # extract metadata
             # return metadata and features without metadata
             return start, end, fps, last_segment, next_segment, data[1:]
+
+        if data[0, 0] == -9999:  # check if we want to create synthetic data
+            synthetic = SyntheticSignWritingGenerator()
+            synthetic.add_keyframe()
+            generated_pose = synthetic.render()
+            generated_pose = reduce_holistic(generated_pose)
+            generated_pose.focus()
+            self.shared_state.set("generated_fsw", synthetic.render_fsw())
+            generated_pose = generated_pose.body.data
+            return generated_pose.reshape(len(generated_pose), -1)
+
         return None
 
     def get_features(self, pose_path: str, buffer_size: float) -> np.ndarray:
@@ -76,7 +104,7 @@ class PoseProcessor(SpeechProcessor):
             if _path.suffix != ".npy":
                 raise ValueError(f"Invalid file type: {_path}")
             features = np.load(_path.as_posix())
-            features = pose_ndarray_to_matrix(features, 0, 29.97003)    # 29.97003 default fps
+            features = pose_ndarray_to_matrix(features, 0, 29.97003)  # 29.97003 default fps
 
         # dynamic cutting if needed
         elif len(extra) == 2:
@@ -85,10 +113,13 @@ class PoseProcessor(SpeechProcessor):
             features = _get_features_from_zip(_path, extra[0], extra[1])
             metadata = self.get_metadata(features)
             if metadata is not None:
-                start, end, fps, last_segment, next_segment, features = metadata
-                start_addition = (start - last_segment) * buffer_size
-                end_reduction = (next_segment - end) * buffer_size
-                features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
+                if len(metadata) == 6:
+                    start, end, fps, last_segment, next_segment, features = metadata
+                    start_addition = (start - last_segment) * buffer_size
+                    end_reduction = (next_segment - end) * buffer_size
+                    features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
+                else:
+                    features = metadata
         else:
             raise ValueError("Invalid format")
 
@@ -166,6 +197,7 @@ class SwuTokenizer(BasicTokenizer):
             normalize: bool = False,
             max_length: int = -1,
             min_length: int = -1,
+            shared_state: SharedState = None,
             **kwargs,
     ):
         super().__init__(level, lowercase, normalize, max_length, min_length, **kwargs)
@@ -174,10 +206,16 @@ class SwuTokenizer(BasicTokenizer):
                   'eos_token': EOS_TOKEN,
                   'pad_token': PAD_TOKEN,
                   'unk_token': UNK_TOKEN}
+        self.shared_state = shared_state
         self.tokenizer = SignWritingTokenizer(starting_index=None, **kwargs)
 
     def __call__(self, raw_input: str, is_train: bool = False) -> List[str]:
         """Tokenize"""
+        if raw_input == "SYNTHETIC":
+            if "generated_fsw" not in self.shared_state.data.keys():
+                raw_input = ""
+            else:
+                raw_input = self.shared_state.get("generated_fsw")
         tokenized = [self.tokenizer.i2s[s] for s in self.tokenizer.tokenize(raw_input)]
         if is_train and self._filter_by_length(len(tokenized)):
             return None
@@ -194,6 +232,8 @@ class SwuTokenizer(BasicTokenizer):
             sequence = self.tokenizer.detokenize(sequence)
         # ensure the string is not empty.
         assert sequence is not None and len(sequence) > 0, sequence
+        if sequence == "SYNTHETIC" and "generated_fsw" in self.shared_state.data.keys():
+            sequence = self.shared_state.get("generated_fsw")
         return sequence
 
     def copy_cfg_file(self, model_dir: Path) -> None:
@@ -210,7 +250,7 @@ class SwuTokenizer(BasicTokenizer):
                 f"tokenizer=SignWritingTokenizer)")
 
 
-def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
+def _build_tokenizer(cfg: Dict, online_shared_state=None) -> BasicTokenizer:
     """Builds tokenizer."""
     tokenizer = None
     tokenizer_cfg = cfg.get("tokenizer_cfg", {})
@@ -235,6 +275,7 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
             normalize=cfg.get("normalize", False),
             max_length=cfg.get("max_length", -1),
             min_length=cfg.get("min_length", -1),
+            shared_state=online_shared_state,
             **tokenizer_cfg,
         )
     elif cfg["level"] == "bpe":
@@ -293,6 +334,7 @@ def _build_tokenizer(cfg: Dict) -> BasicTokenizer:
                 aug_param=cfg.get("aug_param", 0.2),
                 noise=cfg.get("noise", False),
                 noise_param=cfg.get("noise_param", 0.1),
+                shared_state=online_shared_state,
                 **tokenizer_cfg,
             )
         else:
@@ -306,9 +348,10 @@ def build_tokenizer(data_cfg: Dict) -> Dict[str, BasicTokenizer]:
     task = data_cfg.get("task", "MT").upper()
     src_lang = data_cfg["src"]["lang"] if task == "MT" else "src"
     trg_lang = data_cfg["trg"]["lang"] if task == "MT" else "trg"
+    shared_state = SharedState()
     tokenizer = {
-        src_lang: _build_tokenizer(data_cfg["src"]),
-        trg_lang: _build_tokenizer(data_cfg["trg"]),
+        src_lang: _build_tokenizer(data_cfg["src"], shared_state),
+        trg_lang: _build_tokenizer(data_cfg["trg"], shared_state),
     }
     logger.info("%s Tokenizer: %s", src_lang, tokenizer[src_lang])
     logger.info("%s Tokenizer: %s", trg_lang, tokenizer[trg_lang])

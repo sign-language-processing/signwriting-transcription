@@ -50,17 +50,17 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 def predict(
-    model: Model,
-    data: Dataset,
-    device: torch.device,
-    n_gpu: int,
-    compute_loss: bool = False,
-    normalization: str = "batch",
-    num_workers: int = 0,
-    cfg: Dict = None,
-    fp16: bool = False,
+        model: Model,
+        data: Dataset,
+        device: torch.device,
+        n_gpu: int,
+        compute_loss: bool = False,
+        normalization: str = "batch",
+        num_workers: int = 0,
+        cfg: Dict = None,
+        fp16: bool = False,
 ) -> Tuple[Dict[str, float], List[str], List[str], List[List[str]], List[np.ndarray],
-           List[np.ndarray]]:
+List[np.ndarray]]:
     """
     Generates translations for the given data.
     If `compute_loss` is True and references are given, also computes the loss.
@@ -205,9 +205,9 @@ def predict(
                                           if attention_scores is not None else [])
             valid_sequence_scores.extend(
                 ref_scores[sort_reverse_index] \
-                if ref_scores is not None and ref_scores.shape[0] == batch_size
+                    if ref_scores is not None and ref_scores.shape[0] == batch_size
                 else hyp_scores[sort_reverse_index] \
-                if hyp_scores is not None and hyp_scores.shape[0] == batch_size
+                    if hyp_scores is not None and hyp_scores.shape[0] == batch_size
                 else [])
 
             pbar.update(batch.nseqs)
@@ -279,10 +279,10 @@ def predict(
         for eval_metric in eval_metrics:
             if eval_metric == "bleu":
                 metric = SignWritingBLEU()
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref], ) * 100
             elif eval_metric == "chrf":
                 metric = SignWritingCHRF()
-                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref],) * 100
+                valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref], ) * 100
             elif eval_metric == "token_accuracy":
                 decoded_valid_1best = (decoded_valid if n_best == 1 else [
                     decoded_valid[i] for i in range(0, len(decoded_valid), n_best)
@@ -309,7 +309,6 @@ def predict(
             elif eval_metric == "clip":
                 metric = SignWritingCLIPScore(cache_directory=None)
                 valid_scores[eval_metric] = metric.corpus_score(valid_hyp_1best, [valid_ref]) * 100
-
 
         eval_duration = time.time() - eval_start_time
         score_str = ", ".join([
@@ -338,12 +337,12 @@ def predict(
 
 
 def test(
-    cfg_file,
-    ckpt: str,
-    output_path: str = None,
-    datasets: dict = None,
-    save_attention: bool = False,
-    save_scores: bool = False,
+        cfg_file,
+        ckpt: str,
+        output_path: str = None,
+        datasets: dict = None,
+        save_attention: bool = False,
+        save_scores: bool = False,
 ) -> Dict:
     """
     Main test function. Handles loading a model from checkpoint, generating
@@ -496,9 +495,9 @@ def test(
 
 
 def translate(
-    cfg_file: str,
-    pose_files:list[Union[str, Path]],
-    ckpt: str = None,
+        cfg_file: str,
+        pose_files: list[Union[str, Path]],
+        ckpt: str = None,
 ) -> List[str]:
     """
     Interactive translation function.
@@ -593,20 +592,24 @@ def translate(
         print(hey)
     return all_hypotheses
 
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser("Pose NMT")
 
     ap.add_argument("config_path", type=str, help="path to YAML config file")
     ap.add_argument("mode", type=str, help="mode to run in", choices=["test", "translate"])
-    ap.add_argument("pose_path", type=str, help="path to pose")
+    ap.add_argument("--pose_path", type=str, help="path to pose", default="")
+    ap.add_argument("--ckpt_dir", type=str, help="path to model checkpoint", default=None)
+    ap.add_argument("--add_to_name", type=str, help="add to name", default="")  # Change here
     args = ap.parse_args()
     if args.mode == "test":
         score_results = test(
             cfg_file=args.config_path,
             ckpt=None,
             save_attention=None,
-            save_scores=None,)
-        update_model_info({"model_dir": "experiment/best.ckpt",
+            save_scores=None, )
+        # pylint: disable=too-many-function-args
+        update_model_info({"model_dir": f'{args.ckpt_dir}/best.ckpt',
                            "SymbolScore": score_results["fsw_eval"][1],
                            "BleuScore": score_results["bleu"][1],
                            "ChrfScore": score_results["chrf"][1],
@@ -615,7 +618,9 @@ if __name__ == '__main__':
                            "BleuScore_dev": score_results["bleu"][0],
                            "ChrfScore_dev": score_results["chrf"][0],
                            "ClipScore_dev": score_results["clip"][0],
-                           "token": "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"})
+                           "token": "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"},
+                          args.add_to_name)
+
     else:
         translate(
             cfg_file=args.config_path,

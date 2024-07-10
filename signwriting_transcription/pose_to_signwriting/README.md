@@ -104,3 +104,23 @@ Launch TensorBoard to visualize training progress:
 ```bash
 tensorboard --logdir /content/models/poses/tensorboard
 ```
+
+## Using bash script for fast training and updating the model
+
+For training pre-trained model, you can use the following bash script:
+
+```bash
+bash signwriting_transcription/pose_to_signwriting/pretrain.sh
+```
+
+For activating the fine-tuning process, you can use the following bash script:
+
+```bash
+bash signwriting_transcription/pose_to_signwriting/fine_tuning.sh pretrain
+```
+
+For uploading the model to the cloud, you can use the following bash script:
+
+```bash
+bash signwriting_transcription/pose_to_signwriting/upload_model.sh {'pretrain' if it is pre-trained model or nothing if it is fine-tuned model}
+```

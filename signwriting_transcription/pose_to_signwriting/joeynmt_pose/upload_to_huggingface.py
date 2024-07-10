@@ -4,7 +4,7 @@ from huggingface_hub import HfApi
 from signwriting_transcription.pose_to_signwriting.joeynmt_pose.upload_to_sheets import upload_line
 
 
-def update_model_info(info):
+def update_model_info(info, additional_name_file=""):
     file_path = info["model_dir"]
     full_path = os.path.abspath(file_path)
 
@@ -15,7 +15,7 @@ def update_model_info(info):
     api = HfApi()
     api.upload_file(
         path_or_fileobj=full_path,
-        path_in_repo=f'{commit_id}.ckpt',
+        path_in_repo=f'{additional_name_file}{commit_id}.ckpt',
         repo_id="ohadlanger/signwriting_transcription",
         repo_type="space",
         token=info["token"],
