@@ -69,6 +69,7 @@ def get_split_data(dataset, feature_root):
 def generate_synthetic_data():
     # create synthetic data
     synthetic = SyntheticSignWritingGenerator()
+    synthetic.add_keyframe()
     generated_pose = synthetic.render()
 
     # reduce the pose to the holistic representation
@@ -76,6 +77,7 @@ def generate_synthetic_data():
     generated_pose.focus()
     generated_pose = generated_pose.body.data
     generated_pose = generated_pose.reshape(len(generated_pose), -1)
+    generated_pose = generated_pose.filled(fill_value=0)
 
     # render the fsw
     fsw = synthetic.render_fsw()
@@ -113,7 +115,7 @@ def process(args):
     print("Extracting pose features ...")
     for instance in dataset:
         utt_id = instance[0]
-        extract_to_matrix(instance[1], feature_root / f'{utt_id}.npy', overwrite=False)
+        extract_to_matrix(instance[1], feature_root / f'{utt_id}.npy', overwrite=True)
 
     # Pack features into ZIP
     print("ZIPing features...")
