@@ -21,8 +21,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from pose_format.utils.generic import reduce_holistic
 
 from joeynmt.helpers import write_list_to_file
+from synthetic_signwriting.generator import SyntheticSignWritingGenerator
 from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
     create_zip,
     get_zip_manifest,
@@ -30,6 +32,7 @@ from signwriting_transcription.pose_to_signwriting.data.pose_data_utils import (
     build_pose_vocab
 )
 from signwriting_transcription.pose_to_signwriting.data.datasets_pose import extract_to_matrix
+
 # pylint: disable=duplicate-code
 
 COLUMNS = ["id", "src", "n_frames", "trg"]
@@ -40,6 +43,7 @@ N_WORKERS = 4  # cpu_count()
 SP_MODEL_TYPE = "bpe"  # one of ["bpe", "unigram", "char"]
 VOCAB_SIZE = 1182  # joint vocab
 EXPANDED_DATASET = 1000  # the minimum number of samples in the dataset
+
 
 def get_split_data(dataset, feature_root):
     print("Fetching ZIP manifest...")
@@ -62,6 +66,23 @@ def get_split_data(dataset, feature_root):
     return all_data
 
 
+def generate_synthetic_data():
+    # create synthetic data
+    synthetic = SyntheticSignWritingGenerator()
+    generated_pose = synthetic.render()
+
+    # reduce the pose to the holistic representation
+    generated_pose = reduce_holistic(generated_pose)
+    generated_pose.focus()
+    generated_pose = generated_pose.body.data
+    generated_pose = generated_pose.reshape(len(generated_pose), -1)
+
+    # render the fsw
+    fsw = synthetic.render_fsw()
+
+    return generated_pose, fsw
+
+
 def process(args):
     # pylint: disable=too-many-locals
     data_root, name, size = (
@@ -79,9 +100,12 @@ def process(args):
     for index in range(size):
         instance = [str(index), const_np_array.copy(), "SYNTHETIC", "train"]
         dataset.append(tuple(instance))
-    for index in range(30):
-        test_instance = [f"test{index}", const_np_array.copy(), "SYNTHETIC", "test"]
-        dev_instance = [f"dev{index}", const_np_array.copy(), "SYNTHETIC", "dev"]
+    for index in range(100):
+        # create synthetic data
+        test_synthetic_pose, test_synthetic_fsw = generate_synthetic_data()
+        dev_synthetic_pose, dev_synthetic_fsw = generate_synthetic_data()
+        test_instance = [f"test{index}", test_synthetic_pose, test_synthetic_fsw, "test"]
+        dev_instance = [f"dev{index}", dev_synthetic_pose, dev_synthetic_fsw, "dev"]
         dataset.append(tuple(test_instance))
         dataset.append(tuple(dev_instance))
     print("the length of dataset: ", len(dataset))
