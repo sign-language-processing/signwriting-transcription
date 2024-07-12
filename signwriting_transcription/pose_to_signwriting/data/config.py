@@ -76,8 +76,8 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses', test
         adam_betas: [0.9, 0.98] 
         scheduling: "plateau"
         patience: 10
-        learning_rate: 0.00015
-        learning_rate_min: 0.000000015
+        learning_rate: 0.0001
+        learning_rate_min: 0.00000001
         weight_decay: 0.0
         label_smoothing: 0.1
         loss: "crossentropy-ctc"       # use CrossEntropyLoss + CTCLoss
@@ -86,7 +86,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses', test
         batch_type: "sentence"
         batch_multiplier: 1
         early_stopping_metric: chrf        # by default, early stopping uses "fsw_eval" metric
-        epochs: 1                     # Decrease for when playing around and checking of working.
+        epochs: 20                     # Decrease for when playing around and checking of working.
         validation_freq: 1000          # Set to at least once per epoch.
         logging_freq: 100
         model_dir: "{experiment_dir}"
