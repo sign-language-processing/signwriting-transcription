@@ -120,6 +120,8 @@ class PoseProcessor(SpeechProcessor):
                     features = pose_ndarray_to_matrix(features, start - start_addition, fps, end + end_reduction)
                 else:
                     features = metadata
+            else:
+                print("hi")
         else:
             raise ValueError("Invalid format")
 

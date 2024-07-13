@@ -75,7 +75,7 @@ def create_config(data_path="/output/poses", experiment_dir='/model/poses', test
         adam_betas: [0.9, 0.98] 
         scheduling: "plateau"
         patience: 10
-        learning_rate: 0.00008
+        learning_rate: 0.0002
         learning_rate_min: 0.000000015
         weight_decay: 0.0
         label_smoothing: 0.1
