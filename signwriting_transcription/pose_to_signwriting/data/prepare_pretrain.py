@@ -106,8 +106,8 @@ def process(args):
         # create synthetic data
         test_synthetic_pose, test_synthetic_fsw = generate_synthetic_data()
         dev_synthetic_pose, dev_synthetic_fsw = generate_synthetic_data()
-        test_instance = [f"test{index}", test_synthetic_pose, test_synthetic_fsw, "test"]
-        dev_instance = [f"dev{index}", dev_synthetic_pose, dev_synthetic_fsw, "dev"]
+        test_instance = [f"test{index}", test_synthetic_pose.copy(), test_synthetic_fsw, "test"]
+        dev_instance = [f"dev{index}", dev_synthetic_pose.copy(), dev_synthetic_fsw, "dev"]
         dataset.append(tuple(test_instance))
         dataset.append(tuple(dev_instance))
     print("the length of dataset: ", len(dataset))
