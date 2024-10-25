@@ -33,6 +33,7 @@ if __name__ == "__main__":
     SELECT CONCAT("videoId", '.pose') as pose, "videoLanguage", start, "end", "text" 
     FROM captions 
     WHERE language = 'Sgnw'
+    ORDER BY "videoId", start
     """
 
     cursor = database.cursor()
