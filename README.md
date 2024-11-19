@@ -6,10 +6,10 @@ This project aims to automatically transcribe SignWriting from isolated/continuo
 
 (These examples are taken from the DSGS Vokabeltrainer)
 
-|             |                        00004                        |                        00007                        |                        00015                        |
-|:-----------:|:---------------------------------------------------:|:---------------------------------------------------:|:---------------------------------------------------:|
-|    Video    | <img src="assets/examples/00004.gif" width="150px"> | <img src="assets/examples/00007.gif" width="150px"> | <img src="assets/examples/00015.gif" width="150px"> |
-| SignWriting | <img src="assets/examples/00004.png" width="50px">  | <img src="assets/examples/00007.png" width="50px">  | <img src="assets/examples/00015.png" width="50px">  |
+|             |                                                                    00004                                                                     |                                                                    00007                                                                     |                                                                    00015                                                                     |
+|:-----------:|:--------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------:|
+|    Video    | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00004.gif?raw=true" width="150px"> | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00007.gif?raw=true" width="150px"> | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00015.gif?raw=true" width="150px"> |
+| SignWriting | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00004.png?raw=true" width="50px">  | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00007.png?raw=true" width="50px">  | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00015.png?raw=true" width="50px">  |
 
 ## Tokenization
 
