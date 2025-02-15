@@ -1,0 +1,60 @@
+# Configuration file for training with the multimodalhugs framework.
+# This file contains settings for the model, common experiment parameters,
+# training hyperparameters, and dataset/data loading options.
+
+model:
+  # Model-specific settings:
+  type: "multimodal_embedder"
+  name: "signwriting_transcription_model"                 # The identifier or name of your model configuration.
+  vl_mapper_type: "linear"                                # Type of visual-language mapper (e.g., "linear" or "adapter").
+  vl_mapper_layer_norm_before: true                       # Whether to apply Layer Normalization before the VL mapper.
+  vl_mapper_dropout: 0.1                                  # Dropout probability for the VL mapper to prevent overfitting.
+  backbone_name: "t5"                                     # Identifier for the pretrained backbone (e.g., "m2m100").
+  pretrained_backbone: "google/byt5-small"                # Weights or checkpoint identifier for the pretrained backbone.
+  encoder_embed_dim: 1472
+  feat_dim: 534                                           # Dimensionality of the features produced by the backbone or feature extractor.
+  init_lang_abbr: avg                                     # Abbreviation of the language used to initialize new language embeddings. (avg means that the new embeddings will be inicialized from the avg of the pretrained embeddings.)
+
+common:
+  # Common experiment parameters (e.g., for experiment tracking):
+  #  wandb_name: mmh_transcription                            # Name for the experiment in Weights & Biases (wandb).
+  wandb_project: mmh_transcription                       # Project name in wandb where the experiment will be logged.
+
+training:
+  # Training hyperparameters and directories:
+  output_dir: "/scratch/amoryo/tmp/signwriting-transcription/results"                   # Directory where model checkpoints and final results will be saved.
+  logging_dir: "/scratch/amoryo/tmp/signwriting-transcription/logs"                     # Directory where training logs will be stored.
+  overwrite_output_dir: false                             # If true, the output directory will be overwritten if it exists.
+  evaluation_strategy: "steps"                            # Evaluation strategy ("steps" or "epoch") for periodic evaluation.
+  eval_steps: 2000                                         # Perform evaluation every 128 training steps.
+  per_device_train_batch_size: 8                          # Batch size per device (GPU/CPU) during training.
+  gradient_accumulation_steps: 3                          # Number of steps to accumulate gradients before updating weights.
+  learning_rate: 0.001                                      # Learning rate for the optimizer.
+  weight_decay: 0                                         # Weight decay (L2 regularization) factor.
+  adam_beta1: 0.9                                         # Beta1 hyperparameter for the Adam optimizer.
+  adam_beta2: 0.998                                       # Beta2 hyperparameter for the Adam optimizer.
+  max_grad_norm: 0.0                                      # Maximum gradient norm for clipping (0 means no clipping).
+  num_train_epochs: 1                                     # Number of training epochs.
+  max_steps: 500000                                       # Maximum number of training steps (overrides num_train_epochs if set).
+  lr_scheduler_type: "constant_with_warmup"               # Type of learning rate scheduler (e.g., "constant_with_warmup").
+  warmup_steps: 8000                                      # Number of warmup steps to gradually increase the learning rate.
+  logging_steps: 128                                      # Interval (in steps) at which training metrics are logged.
+  save_steps: 2000                                         # Interval (in steps) at which checkpoints are saved.
+  save_total_limit: 10                                    # Maximum number of checkpoints to retain (older ones will be deleted).
+  seed: 3435                                              # Random seed for reproducibility.
+  label_smoothing_factor: 0.1                             # Factor for label smoothing during loss computation.
+  dataloader_drop_last: false                             # Whether to drop the last incomplete batch in the dataloader.
+  dataloader_num_workers: 8                               # Number of subprocesses to use for data loading.
+  remove_unused_columns: True                             # Remove columns from the dataset that are not used by the model.
+  fp16: True                                              # Enable mixed-precision training (FP16) for faster computation and reduced memory usage.
+
+data:
+  # Dataset and preprocessing settings:
+  train_metadata_dir: "/scratch/amoryo/tmp/signwriting-transcription/data.train.tsv"                                                                       # Path to the training metadata file (e.g., TSV format).
+  validation_metadata_dir: "/scratch/amoryo/tmp/signwriting-transcription/data.dev.tsv"                                                             # Path to the validation metadata file.
+  test_metadata_dir: "/scratch/amoryo/tmp/signwriting-transcription/data.test.tsv"                                                                         # Path to the test metadata file.
+  shuffle: True                                                                                                                # Shuffle the dataset samples during loading.
+  tokenizer_src_langs_path: "/scratch/amoryo/tmp/signwriting-transcription/data.tokens.txt"          # Path to the file listing the source languages for the tokenizer.
+  text_tokenizer_path: "google/byt5-small"                                                                                     # Path or identifier for the pretrained text tokenizer (e.g., "facebook/m2m100_418M").
+  max_seq_length: 512                                                                                                          # Maximum number of tokens allowed in a sequence for tokenization/generation.
+  max_frames: 512                                                                                                              # Maximum number of frames to consider in video samples; samples exceeding this are filtered.

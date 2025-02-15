@@ -10,12 +10,15 @@ authors = [
 readme = "README.md"
 dependencies = [
     "tqdm",
+    "pandas",
     # Loading and processing poses
     "pose-format",
     "mediapipe",
     # SignWriting essentials
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
     "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
+    # Modeling
+    "multimodalhugs @ git+https://github.com/GerrySant/multimodalhugs.git",
     # CLI
     "pympi-ling", # Used for reading and writing ELAN files
 ]
