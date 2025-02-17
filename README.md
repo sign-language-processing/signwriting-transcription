@@ -38,24 +38,14 @@ Modify `signwriting_transcription/config.yaml` with the correct paths.
 ```shell
 multimodalhugs-setup \
   --modality "pose2text" \
-  --config_path signwriting_transcription/config.yaml
+  --config_path "signwriting_transcription/config.yaml"
 ```
 
 #### MultimodalHugs Train
 
 ```shell
-MODEL_PATH=/scratch/amoryo/tmp/signwriting-transcription/results/signwriting_transcription_model/trained_model
-PROCESSOR_PATH=/scratch/amoryo/tmp/signwriting-transcription/results/signwriting_transcription_model/pose2text_translation_processor
-DATA_PATH=/scratch/amoryo/tmp/signwriting-transcription/results/signwriting_transcription_model/datasets/pose2text
-
 ./signwriting_transcription/train.sh
 ```
-
-
-## Tokenization
-
-SignWriting can be tokenized using
-the [SignWriting Tokenizer](https://github.com/sign-language-processing/signwriting/tree/main/signwriting/tokenizer).
 
 ## Implementations
 

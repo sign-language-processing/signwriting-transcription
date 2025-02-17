@@ -15,11 +15,6 @@ model:
   feat_dim: 534                                           # Dimensionality of the features produced by the backbone or feature extractor.
   init_lang_abbr: avg                                     # Abbreviation of the language used to initialize new language embeddings. (avg means that the new embeddings will be inicialized from the avg of the pretrained embeddings.)
 
-common:
-  # Common experiment parameters (e.g., for experiment tracking):
-  #  wandb_name: mmh_transcription                            # Name for the experiment in Weights & Biases (wandb).
-  wandb_project: mmh_transcription                       # Project name in wandb where the experiment will be logged.
-
 training:
   # Training hyperparameters and directories:
   output_dir: "/scratch/amoryo/tmp/signwriting-transcription/results"                   # Directory where model checkpoints and final results will be saved.

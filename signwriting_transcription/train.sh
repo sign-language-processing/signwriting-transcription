@@ -25,6 +25,9 @@ huggingface-cli login --token $HUGGINGFACE_TOKEN
 # Verify GPU with PyTorch
 python3 -c "import torch; print(torch.cuda.is_available())"
 
+# Set WANDB project
+export WANDB_PROJECT=mmh_transcription
+
 # ----------------------------------------------------------
 # 1. Specify global variables
 # ----------------------------------------------------------
@@ -42,6 +45,7 @@ DATA_PATH="${MODEL_DIR}/datasets/pose2text"
 # TODO: support signwriting-similarity
 multimodalhugs-train \
     --task "translation" \
+    --config-path "signwriting_transcription/config.yaml" \
     --model_name_or_path $MODEL_PATH \
     --processor_name_or_path $PROCESSOR_PATH \
     --run_name $MODEL_NAME \
