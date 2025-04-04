@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=data-multimodalhugs
 #SBATCH --time=24:00:00
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=16GB
 #SBATCH --output=translation-data.out
 #SBATCH --ntasks=1
@@ -23,9 +23,18 @@ mkdir -p $DATA_DIR
 [ ! -f "$DATA_DIR/data.csv" ] && \
 wget -O "$DATA_DIR/data.csv" https://github.com/sign/data/raw/refs/heads/main/signwriting-transcription/data.csv
 
-# Transform dataset to TSV splits
-python "$(dirname "$0")/transform_dataset.py" \
+# Augment dataset by adding segmented signs for single signs
+python "signwriting_transcription/segment_signs.py" \
   --input "$DATA_DIR/data.csv" \
+  --poses "/shares/sigma.ebling.cl.uzh/amoryo/import/poses" \
+  --output "$DATA_DIR/data_augmented.csv"
+
+# Transform dataset to TSV splits
+python "signwriting_transcription/transform_dataset.py" \
+  --input "$DATA_DIR/data_augmented.csv" \
   --poses "/shares/sigma.ebling.cl.uzh/amoryo/import/poses" \
   --output "$DATA_DIR/data.tsv"
 
+multimodalhugs-setup \
+  --modality "pose2text" \
+  --config-path "signwriting_transcription/config.yaml"

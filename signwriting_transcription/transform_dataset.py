@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from pathlib import Path
+from signwriting.formats.swu_to_fsw import swu_add_prefix
 
 def get_dataset_tokens(pose: str):
     if pose.startswith("dictio"):
@@ -19,13 +20,14 @@ def get_dataset_tokens(pose: str):
 
 def map_datum(row, poses_dir: Path):
     source_tokens = ["__pose__"] + get_dataset_tokens(row['pose'])
+
     return {
         "source_signal": str(poses_dir / row['pose']),
         "source_start": row['start'],
         "source_end": row['end'],
         "source_prompt": " ".join(source_tokens),
         "generation_prompt": f"__{row['videoLanguage']}__",
-        "output_text": row['text']
+        "output_text": swu_add_prefix(row['text'])
     }
 
 
@@ -61,7 +63,7 @@ def main():
     print(f"Writing {tokens_file}")
     with open(tokens_file, 'w') as f:
         for token in new_tokens:
-            f.write(f"{token} 1\n")
+            f.write(f"{token}\n")
 
 if __name__ == "__main__":
     main()

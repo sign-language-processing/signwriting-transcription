@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=train-multimodalhugs
 #SBATCH --time=168:00:00
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=16GB
 #SBATCH --output=translation-job.out
 
@@ -28,46 +28,19 @@ python3 -c "import torch; print(torch.cuda.is_available())"
 # Set WANDB project
 export WANDB_PROJECT=mmh_transcription
 
-# ----------------------------------------------------------
-# 1. Specify global variables
-# ----------------------------------------------------------
+# Specify global variables
 MODEL_NAME="signwriting_transcription_model"
 MODEL_DIR="/scratch/amoryo/tmp/signwriting-transcription/results/${MODEL_NAME}"
 OUTPUT_PATH="${MODEL_DIR}/output"
 
-MODEL_PATH="${MODEL_DIR}/trained_model"
-PROCESSOR_PATH="${MODEL_DIR}/pose2text_translation_processor"
-DATA_PATH="${MODEL_DIR}/datasets/pose2text"
+# Run setup (again) to ensure the config file is up-to-date with paths for the processor etc
+multimodalhugs-setup \
+  --modality "pose2text" \
+  --config-path "signwriting_transcription/config.yaml"
 
-# ----------------------------------------------------------
-# 2. Train the Model
-# ----------------------------------------------------------
-# TODO: support signwriting-similarity
+# Train the Model
+# TODO: support signwriting-similarity metric
 multimodalhugs-train \
-    --task "translation" \
-    --config-path "signwriting_transcription/config.yaml" \
-    --model_name_or_path $MODEL_PATH \
-    --processor_name_or_path $PROCESSOR_PATH \
-    --run_name $MODEL_NAME \
-    --dataset_dir $DATA_PATH \
-    --output_dir $OUTPUT_PATH \
-    --do_train True \
-    --do_eval True \
-    --fp16 \
-    --label_smoothing_factor 0.1 \
-    --per_device_train_batch_size 8 \
-    --per_device_eval_batch_size 8 \
-    --evaluation_strategy "steps" \
-    --eval_steps 2000 \
-    --save_strategy "steps" \
-    --save_steps 2000 \
-    --save_total_limit 3 \
-    --load_best_model_at_end true \
-    --metric_for_best_model 'chrf' \
-    --overwrite_output_dir \
-    --gradient_accumulation_steps 4 \
-    --learning_rate 1e-3 \
-    --warmup_steps 20000 \
-    --max_steps 200000 \
-    --predict_with_generate True \
-    --remove_unused_columns False
+  --task "translation" \
+  --config-path "signwriting_transcription/config.yaml" \
+  --output_dir "$OUTPUT_PATH"

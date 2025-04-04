@@ -24,27 +24,17 @@ pip install .
 #### Data Preparation
 
 ```shell
-./signwriting_transcription/prepare_data.sh
+sbatch ./signwriting_transcription/prepare_data.sh
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.train.tsv
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.dev.tsv
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.test.tsv
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.tokens.txt
 ```
 
-Modify `signwriting_transcription/config.yaml` with the correct paths.
-
-#### MultimodalHugs Setup
-
-```shell
-multimodalhugs-setup \
-  --modality "pose2text" \
-  --config_path "signwriting_transcription/config.yaml"
-```
-
 #### MultimodalHugs Train
 
 ```shell
-./signwriting_transcription/train.sh
+sbatch ./signwriting_transcription/train.sh
 ```
 
 ## Implementations
