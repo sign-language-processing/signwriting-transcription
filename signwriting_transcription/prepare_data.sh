@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=data-multimodalhugs
 #SBATCH --time=24:00:00
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=16
 #SBATCH --mem=16GB
 #SBATCH --output=translation-data.out
 #SBATCH --ntasks=1
@@ -37,4 +37,4 @@ python "signwriting_transcription/transform_dataset.py" \
 
 multimodalhugs-setup \
   --modality "pose2text" \
-  --config-path "signwriting_transcription/config.yaml"
+  --config_path "signwriting_transcription/config.yaml"

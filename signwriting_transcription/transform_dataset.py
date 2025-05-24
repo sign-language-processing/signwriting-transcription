@@ -22,12 +22,12 @@ def map_datum(row, poses_dir: Path):
     source_tokens = ["__pose__"] + get_dataset_tokens(row['pose'])
 
     return {
-        "source_signal": str(poses_dir / row['pose']),
-        "source_start": row['start'],
-        "source_end": row['end'],
-        "source_prompt": " ".join(source_tokens),
-        "generation_prompt": f"__{row['videoLanguage']}__",
-        "output_text": swu_add_prefix(row['text'])
+        "signal": str(poses_dir / row['pose']),
+        "signal_start": row['start'],
+        "signal_end": row['end'],
+        "encoder_prompt": " ".join(source_tokens),
+        "decoder_prompt": f"__{row['videoLanguage']}__",
+        "output": swu_add_prefix(row['text'])
     }
 
 
@@ -53,7 +53,7 @@ def main():
         print(f"Writing {split_file}")
         split_df.to_csv(split_file, sep='\t', index=False)
 
-        for field in ["source_prompt", "generation_prompt"]:
+        for field in ["encoder_prompt", "decoder_prompt"]:
             for language_tokens in split_df[field]:
                 for language_token in language_tokens.split():
                     new_tokens.add(language_token)

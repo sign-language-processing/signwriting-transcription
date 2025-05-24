@@ -3,7 +3,7 @@
 #SBATCH --job-name=train-multimodalhugs
 #SBATCH --time=168:00:00
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16GB
+#SBATCH --mem=32GB
 #SBATCH --output=translation-job.out
 
 #SBATCH --ntasks=1
@@ -33,14 +33,15 @@ MODEL_NAME="signwriting_transcription_model"
 MODEL_DIR="/scratch/amoryo/tmp/signwriting-transcription/results/${MODEL_NAME}"
 OUTPUT_PATH="${MODEL_DIR}/output"
 
+
 # Run setup (again) to ensure the config file is up-to-date with paths for the processor etc
+# Only run this if MODEL_DIR does not exist
 multimodalhugs-setup \
   --modality "pose2text" \
-  --config-path "signwriting_transcription/config.yaml"
+  --config_path "signwriting_transcription/config.yaml"
 
 # Train the Model
-# TODO: support signwriting-similarity metric
 multimodalhugs-train \
   --task "translation" \
-  --config-path "signwriting_transcription/config.yaml" \
+  --config_path "signwriting_transcription/config.yaml" \
   --output_dir "$OUTPUT_PATH"

@@ -5,13 +5,13 @@
 model:
   # Model-specific settings:
   type: "multimodal_embedder"
-  vl_mapper_type: "linear"                                # Type of visual-language mapper (e.g., "linear" or "adapter").
-  vl_mapper_layer_norm_before: true                       # Whether to apply Layer Normalization before the VL mapper.
-  vl_mapper_dropout: 0.1                                  # Dropout probability for the VL mapper to prevent overfitting.
+  multimodal_mapper_type: "linear"                                # Type of visual-language mapper (e.g., "linear" or "adapter").
+  multimodal_mapper_layer_norm_before: true                       # Whether to apply Layer Normalization before the VL mapper.
+  multimodal_mapper_dropout: 0.1                                  # Dropout probability for the VL mapper to prevent overfitting.
   backbone_type: "t5"                                     # Identifier for the pretrained backbone (e.g., "m2m100").
   pretrained_backbone: "google/byt5-small"                # Weights or checkpoint identifier for the pretrained backbone.
   feat_dim: 534                                           # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
-
+  max_length: 512
 
 training:
   run_name: "signwriting_transcription_model"           # The name or identifier of the model configuration.
@@ -19,19 +19,24 @@ training:
   logging_dir: "/scratch/amoryo/tmp/signwriting-transcription/logs"              # Directory to store training logs.
   do_train: True                                   # Whether to run training.
   do_eval: True                                    # Whether to run evaluation on the validation set.
-  predict_with_generate: true                      # Use generate to compute generative metrics.
+  predict_with_generate: True                      # Use generate to compute generative metrics.
   overwrite_output_dir: True                       # Do not overwrite the output directory if it exists.
   save_strategy: "steps"                           # Checkpoint save strategy during training.
   eval_strategy: "steps"                     # Evaluation strategy ("steps" or "epoch").
-  eval_steps: 128                                  # Number of training steps between evaluations.
-  logging_steps: 128                               # Interval (in steps) at which training metrics are logged.
-  save_steps: 128                                  # Interval (in steps) at which model checkpoints are saved.
-  per_device_train_batch_size: 16                   # Batch size per device during training.
-  per_device_eval_batch_size: 8                    # Batch size per device for evaluation.
+  eval_on_start: True # Make sure metrics work, by evaluating on start
+  eval_steps: 512                                  # Number of training steps between evaluations.
+  logging_steps: 32                               # Interval (in steps) at which training metrics are logged.
+  save_steps: 512                                  # Interval (in steps) at which model checkpoints are saved.
+  per_device_train_batch_size: 64                  # Batch size per device during training.
+  per_device_eval_batch_size: 64                   # Batch size per device for evaluation.
+  auto_find_batch_size: True                       # Automatically find the optimal batch size.
   gradient_accumulation_steps: 3                   # Number of steps to accumulate gradients before weight updates.
   learning_rate: 5e-05                             # Initial learning rate for the optimizer.
   load_best_model_at_end: True                     # Load the best model found during training at the end.
-  metric_for_best_model: 'bleu'                    # TODO Metric used to determine the best model.
+  dataloader_num_workers: 16                        # Number of subprocesses to use for data loading; higher values speed up data loading but increase memory usage.
+  dataloader_prefetch_factor: 4                    # Number of batches loaded in advance by each worker; total prefetched batches = num_workers * prefetch_factor.
+  metric_name: "sacrebleu,chrf,sign/signwriting_similarity"                         # Name of the metric to use (any metric supported by evaluate.load()). If you want to use multiple metrics, structure the variable like: metric_name: '<metric_name_1>,<metric_name_2>,...'
+  metric_for_best_model: "sign/signwriting_similarity"                    #  Metric used to determine the best model.
   weight_decay: 0                                  # Weight decay factor (L2 regularization).
   adam_beta1: 0.9                                  # Beta1 parameter for the Adam optimizer.
   adam_beta2: 0.998                                # Beta2 parameter for the Adam optimizer.
@@ -43,7 +48,7 @@ training:
   save_total_limit: 10                             # Maximum number of checkpoints to retain (older ones are deleted).
   seed: 3435                                       # Random seed for reproducibility.
   dataloader_drop_last: false                      # Drop the last incomplete batch in the dataloader.
-  fp16: False                                       # Enable mixed-precision (FP16) training for faster computation.
+  bf16: True                                       # Enable mixed-precision (FP16) training for faster computation.
   # See the list of allowed arguments in https://huggingface.co/docs/transformers/v4.49.0/en/main_classes/trainer#transformers.Seq2SeqTrainingArguments
 
 data:

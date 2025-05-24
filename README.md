@@ -16,8 +16,9 @@ The full data is available in [sign/data](https://github.com/sign/data/tree/main
 
 #### Installation
 ```shell
-conda create --name=multimodalhugs python=3.11 -y
+conda create --name=multimodalhugs python=3.11 -y 
 conda activate multimodalhugs
+cd ~/sign-language/signwriting-transcription
 pip install .
 ```
 
