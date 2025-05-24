@@ -52,5 +52,6 @@ packages = [
 addopts = "-v"
 testpaths = ["signwriting_transcription"]
 
+# TODO: Add a script to run the inference
 [project.scripts]
 pose_to_signwriting = "signwriting_transcription.pose_to_signwriting.bin:main"

@@ -13,7 +13,7 @@ def get_segmented_datum(datum, poses_dir: Path):
     with open(file_path, "rb") as f:
         pose = Pose.read(f)
 
-    eaf, tiers = segment_pose(pose, verbose=False)
+    eaf, _ = segment_pose(pose, verbose=False)
     sign_annotations = eaf.get_annotation_data_for_tier('SIGN')
 
     if len(sign_annotations) == 0:
@@ -40,6 +40,10 @@ def augmented_data(data, poses_dir: Path):
         yield datum
 
 
+def datum_index(datum):
+    return "_".join(f"{k}:{v}" for k, v in datum.items())
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
@@ -53,10 +57,9 @@ def main():
     # if output exists, remove it from source and append
     is_append = args.output.exists()
     if is_append:
-        data_index = lambda datum: "_".join(f"{k}:{v}" for k, v in datum.items())
         with open(args.output, "r", encoding="utf-8") as f:
-            existing_data = {data_index(d) for d in DictReader(f)}
-        data = [d for d in data if data_index(d) not in existing_data]
+            existing_data = {datum_index(d) for d in DictReader(f)}
+        data = [d for d in data if datum_index(d) not in existing_data]
         if len(data) == 0:
             return
 

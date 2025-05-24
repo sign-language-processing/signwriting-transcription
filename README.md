@@ -32,7 +32,7 @@ sbatch ./signwriting_transcription/prepare_data.sh
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.tokens.txt
 ```
 
-#### MultimodalHugs Train
+#### Training
 
 ```shell
 sbatch ./signwriting_transcription/train.sh
@@ -40,5 +40,5 @@ sbatch ./signwriting_transcription/train.sh
 
 ## Implementations
 
-- [main](https://github.com/sign-language-processing/signwriting-transcription/tree/main) - Latest implementation.
+- [main](https://github.com/sign-language-processing/signwriting-transcription/tree/main) - Latest implementation using HuggingFace.
 - [v1.0.0](https://github.com/sign-language-processing/signwriting-transcription/tree/1.0.0) - Custom JoeyNMT implementation.

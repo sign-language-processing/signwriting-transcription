@@ -1,6 +1,6 @@
 import argparse
-import pandas as pd
 from pathlib import Path
+import pandas as pd
 from signwriting.formats.swu_to_fsw import swu_add_prefix
 
 def get_dataset_tokens(pose: str):
@@ -61,7 +61,7 @@ def main():
     # Write new tokens to file
     tokens_file = args.output.with_suffix(".tokens.txt")
     print(f"Writing {tokens_file}")
-    with open(tokens_file, 'w') as f:
+    with open(tokens_file, 'w', encoding='utf-8') as f:
         for token in new_tokens:
             f.write(f"{token}\n")
 
