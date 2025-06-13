@@ -1,0 +1,17 @@
+pose,videoLanguage,start,end,text,split
+whatsthatsign-919.pose,ase,0,2133,𝠃𝤑𝤞񄙁𝣼𝣮񂱡𝣼𝤎,train
+whatsthatsign-920.pose,ase,0,2236,𝠃𝤑𝤥񄙁𝣼𝣧񀀡𝣽𝤇,train
+whatsthatsign-921.pose,ase,0,2169,𝠃𝤑𝤥񄙁𝣼𝣧񀕡𝣽𝤇,train
+whatsthatsign-922.pose,ase,0,2302,𝠃𝤔𝤥񄙁𝣿𝣧񀭡𝣸𝤇,train
+whatsthatsign-923.pose,ase,0,2269,𝠃𝤑𝤦񄙁𝣼𝣧񁦡𝣻𝤇,train
+whatsthatsign-924.pose,ase,0,2269,𝠃𝤒𝤦񄙁𝣽𝣧񁲡𝣺𝤇,train
+whatsthatsign-925.pose,ase,0,2669,𝠃𝤑𝤥񄙁𝣼𝣧񃋁𝣻𝤈,train
+whatsthatsign-926.pose,ase,0,2135,𝠃𝤑𝤥񄙁𝣼𝣨񃸁𝣼𝤉,train
+whatsthatsign-919.pose,ase,0,2133,𝠃𝤑𝤞񄙁𝣼𝣮񂱡𝣼𝤎,dev
+whatsthatsign-920.pose,ase,0,2236,𝠃𝤑𝤥񄙁𝣼𝣧񀀡𝣽𝤇,dev
+whatsthatsign-921.pose,ase,0,2169,𝠃𝤑𝤥񄙁𝣼𝣧񀕡𝣽𝤇,dev
+whatsthatsign-922.pose,ase,0,2302,𝠃𝤔𝤥񄙁𝣿𝣧񀭡𝣸𝤇,dev
+whatsthatsign-923.pose,ase,0,2269,𝠃𝤑𝤦񄙁𝣼𝣧񁦡𝣻𝤇,test
+whatsthatsign-924.pose,ase,0,2269,𝠃𝤒𝤦񄙁𝣽𝣧񁲡𝣺𝤇,test
+whatsthatsign-925.pose,ase,0,2669,𝠃𝤑𝤥񄙁𝣼𝣧񃋁𝣻𝤈,test
+whatsthatsign-926.pose,ase,0,2135,𝠃𝤑𝤥񄙁𝣼𝣨񃸁𝣼𝤉,test

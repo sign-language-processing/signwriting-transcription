@@ -2,3 +2,4 @@
 build/
 signwriting_transcription.egg-info/
 .env
+wandb/

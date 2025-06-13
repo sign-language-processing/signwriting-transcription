@@ -1,0 +1,36 @@
+name: Overfit Test
+
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+
+jobs:
+  test:
+    name: Overfit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Requirements
+        run: pip install ".[dev]"
+
+      - name: Train model to overfit
+        run: make train-overfit
+
+      # Look at example/results/trainer_state.json "best_metric" should be above 0.7
+      - name: Test Overfitting
+        run: |
+          if jq -e '.best_metric > 0.7' example/results/trainer_state.json > /dev/null; then
+            echo "Overfit test passed."
+          else
+            echo "Overfit test failed: best_metric <= 0.5"
+            exit 1
+          fi
