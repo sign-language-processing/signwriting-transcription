@@ -4,8 +4,6 @@ description = "Transcribe single signs into SignWriting"
 version = "0.0.1"
 authors = [
     { name = "Amit Moryossef", email = "amit@sign.mt" },
-    { name = "Rotem Zolbermn", email = "rotemzil2203@gmail.com" },
-    { name = "Ohad Langer", email = "ohadlanger1@gmail.com" }
 ]
 readme = "README.md"
 dependencies = [
@@ -25,9 +23,11 @@ dependencies = [
     "pympi-ling", # Used for reading and writing ELAN files
 ]
 
+[project.optional-dependencies]
 dev = [
     "pytest",
-    "pylint"
+    "pylint",
+    "ruff"
 ]
 
 [tool.yapf]
@@ -46,6 +46,26 @@ good-names = ["ms"]
 [tool.setuptools]
 packages = [
     "signwriting_transcription",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings  
+    "F",    # pyflakes
+    "C90",  # mccabe complexity
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "PT",   # flake8-pytest-style
+    "W605", # invalid escape sequence
+    "BLE",  # flake8-blind-except
+    "TRY",  # tryceratops
 ]
 
 [tool.pytest.ini_options]

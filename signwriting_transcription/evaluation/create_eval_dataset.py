@@ -4,14 +4,15 @@ from pathlib import Path
 import pandas as pd
 
 valid_encoder_prompts = [
-    '__pose__ __dictio__',
+    # '__pose__ __dictio__',
     '__pose__ __sign2mint__',
-    '__pose__ __signsuisse__',
-    '__pose__ __fleurs-asl__',
+    # '__pose__ __signsuisse__',
+    # '__pose__ __fleurs-asl__',
 ]
 
 valid_decoder_prompts = [
     '__ase__',
+    '__gsg__',
 ]
 
 def main():

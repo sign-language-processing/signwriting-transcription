@@ -26,16 +26,13 @@ def get_segmented_datum(datum, poses_dir: Path):
 
 
 def augmented_data(data, poses_dir: Path):
-    pose_counter = Counter(d["pose"] for d in data)
-
     for datum in tqdm(data):
         # We try to create a new sign segment entry if the current entry covers the entire video
-        if int(datum["start"]) == 0:
-            if pose_counter[datum["pose"]] == 1:
-                try:
-                    yield get_segmented_datum(datum, poses_dir)
-                except Exception as e:
-                    print("Skipping", datum["pose"], e)
+        if int(datum["start"]) == 0 and int(datum["end"]) < 10000:
+            try:
+                yield get_segmented_datum(datum, poses_dir)
+            except Exception as e:
+                print("Skipping", datum["pose"], e)
 
         yield datum
 

@@ -25,7 +25,7 @@ pip install .
 #### Data Preparation
 
 ```shell
-sbatch ./signwriting_transcription/prepare_data.sh
+sbatch ./platforms/slurm/prepare_data.sh
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.train.tsv
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.dev.tsv
 # Writing /scratch/amoryo/tmp/signwriting-transcription/data.test.tsv
@@ -35,7 +35,7 @@ sbatch ./signwriting_transcription/prepare_data.sh
 #### Training
 
 ```shell
-sbatch ./signwriting_transcription/train.sh
+sbatch ./platforms/slurm/train.sh
 ```
 
 ## Implementations

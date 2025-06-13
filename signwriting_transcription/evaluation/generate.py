@@ -1,17 +1,27 @@
 import time
+
+start_time = time.time()
 import torch
+print(f"Torch import time: {time.time() - start_time:.2f} seconds")
+
+start_time = time.time()
 from signwriting.formats.swu_to_fsw import swu2fsw
+print(f"signwriting import time: {time.time() - start_time:.2f} seconds")
 
+start_time = time.time()
 from transformers import AutoModelForSeq2SeqLM, AutoProcessor
-from multimodalhugs.tasks.translation.inference_utils import batched_inference
+print(f"transformers import time: {time.time() - start_time:.2f} seconds")
 
-# Needed for AutoModel to work with the model
-import multimodalhugs.models
+start_time = time.time()
+import multimodalhugs.models # noqa: F401  (registers models for HuggingFace AutoModel)
+from multimodalhugs.tasks.translation.inference_utils import batched_inference
+print(f"multimodalhugs import time: {time.time() - start_time:.2f} seconds")
+
 
 # Definitions
 MODEL_ID = "/scratch/amoryo/tmp/signwriting-transcription/results/signwriting_transcription_model/output/checkpoint-264704"
 PROCESSOR_ID = "/scratch/amoryo/tmp/signwriting-transcription/results/pose2text_translation_processor"
-TSV_PATH = "/scratch/amoryo/tmp/signwriting-transcription/data.dev.tsv"
+TSV_PATH = "/home/amoryo/sign-language/signwriting-transcription/popsign_no.tsv"
 
 # Other
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -19,13 +29,11 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 # Instantiation
 start_time = time.time()
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_ID).to(device)
-model_load_time = time.time() - start_time
-print(f"Model loading time: {model_load_time:.2f} seconds")
+print(f"Model loading time: {time.time() - start_time:.2f} seconds")
 
 start_time = time.time()
 processor = AutoProcessor.from_pretrained(PROCESSOR_ID)
-processor_load_time = time.time() - start_time
-print(f"Processor loading time: {processor_load_time:.2f} seconds")
+print(f"Processor loading time: {time.time() - start_time:.2f} seconds")
 
 
 start_time = time.time()
@@ -34,8 +42,7 @@ output = batched_inference(model=model,
                            tsv_path=TSV_PATH,
                            modality="pose2text",
                            batch_size=64)
-inference_time = time.time() - start_time
-print(f"Inference time: {inference_time:.2f} seconds")
+print(f"Inference time: {time.time() - start_time:.2f} seconds")
 
 print(f"output['preds']:\n{len(output['preds'])}\n")
 with open("output.txt", "w", encoding="utf-8") as f:
