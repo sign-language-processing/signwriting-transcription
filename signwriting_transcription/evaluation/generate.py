@@ -1,22 +1,10 @@
 import time
 
-start_time = time.time()
+import multimodalhugs.models  # noqa: F401  (registers models for HuggingFace AutoModel)
 import torch
-print(f"Torch import time: {time.time() - start_time:.2f} seconds")
-
-start_time = time.time()
-from signwriting.formats.swu_to_fsw import swu2fsw
-print(f"signwriting import time: {time.time() - start_time:.2f} seconds")
-
-start_time = time.time()
-from transformers import AutoModelForSeq2SeqLM, AutoProcessor
-print(f"transformers import time: {time.time() - start_time:.2f} seconds")
-
-start_time = time.time()
-import multimodalhugs.models # noqa: F401  (registers models for HuggingFace AutoModel)
 from multimodalhugs.tasks.translation.inference_utils import batched_inference
-print(f"multimodalhugs import time: {time.time() - start_time:.2f} seconds")
-
+from signwriting.formats.swu_to_fsw import swu2fsw
+from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 
 # Definitions
 MODEL_ID = "/scratch/amoryo/tmp/signwriting-transcription/results/signwriting_transcription_model/output/checkpoint-264704"

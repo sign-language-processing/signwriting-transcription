@@ -1,5 +1,4 @@
 import argparse
-from collections import Counter
 from csv import DictReader, DictWriter
 from pathlib import Path
 
@@ -48,13 +47,13 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
-    with open(args.input, "r", encoding="utf-8") as f:
+    with open(args.input, encoding="utf-8") as f:
         data = list(DictReader(f))
 
     # if output exists, remove it from source and append
     is_append = args.output.exists()
     if is_append:
-        with open(args.output, "r", encoding="utf-8") as f:
+        with open(args.output, encoding="utf-8") as f:
             existing_data = {datum_index(d) for d in DictReader(f)}
         data = [d for d in data if datum_index(d) not in existing_data]
         if len(data) == 0:

@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
+
 import pandas as pd
 from signwriting.formats.swu_to_fsw import swu_add_prefix
+
 
 def get_dataset_tokens(pose: str):
     if pose.startswith("dictio"):

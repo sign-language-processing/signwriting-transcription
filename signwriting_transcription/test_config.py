@@ -1,15 +1,16 @@
 # Test to validate config.yaml file
 
 import os
-import yaml
+
 import pytest
+import yaml
 
 
 def test_config_yaml_is_valid():
     """Test that config.yaml is a valid YAML file."""
     config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
 
-    with open(config_path, 'r', encoding='utf-8') as stream:
+    with open(config_path, encoding='utf-8') as stream:
         try:
             config = yaml.safe_load(stream)
             assert config is not None, "Config file should not be empty"
@@ -21,7 +22,7 @@ def test_config_has_required_sections():
     """Test that config.yaml contains required configuration sections."""
     config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
 
-    with open(config_path, 'r', encoding='utf-8') as stream:
+    with open(config_path, encoding='utf-8') as stream:
         config = yaml.safe_load(stream)
 
     required_sections = ['model', 'training', 'data']
@@ -33,7 +34,7 @@ def test_config_model_section():
     """Test that model section contains required fields."""
     config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
 
-    with open(config_path, 'r', encoding='utf-8') as stream:
+    with open(config_path, encoding='utf-8') as stream:
         config = yaml.safe_load(stream)
 
     model_config = config.get('model', {})

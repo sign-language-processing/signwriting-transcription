@@ -8,23 +8,23 @@ def main():
     # Load TSV and get output column
     df = pd.read_csv(TSV_PATH, sep='\t')
     expected_outputs = df['output'].tolist()
-    
+
     # Load generated text
-    with open(GENERATED_PATH, 'r') as f:
+    with open(GENERATED_PATH) as f:
         generated_outputs = [line.strip() for line in f.readlines()]
-    
+
     # Initialize similarity metric
     metric = SignWritingSimilarityMetric()
 
     corpus_score = metric.corpus_score(generated_outputs, [expected_outputs])
     print(f"Corpus similarity score: {corpus_score:.4f}")
-    
+
     # Calculate scores line by line
     scores = []
     for i, (expected, generated) in enumerate(zip(expected_outputs, generated_outputs)):
         score = metric.score(expected, generated)
         scores.append((i, score, expected, generated))
-    
+
     # Sort by score (highest first)
     scores.sort(key=lambda x: x[1], reverse=True)
     print("Average similarity score:", sum(score for _, score, _, _ in scores) / len(scores))
@@ -44,7 +44,8 @@ def main():
         (line_idx, score, expected, generated) for line_idx, score, expected, generated in scores
         if df.iloc[line_idx]['signal_start'] != 0
     ]
-    print("Average similarity score (segmented):", sum(score for _, score, _, _ in segmented_scores) / len(segmented_scores))
+    print("Average similarity score (segmented):",
+          sum(score for _, score, _, _ in segmented_scores) / len(segmented_scores))
 
 
     # Print top 10
