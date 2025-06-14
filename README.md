@@ -12,7 +12,33 @@ The full data is available in [sign/data](https://github.com/sign/data/tree/main
 | SignWriting | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00004.png?raw=true" width="50px">  | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00007.png?raw=true" width="50px">  | <img src="https://github.com/sign/data/blob/main/signwriting-transcription/examples/00015.png?raw=true" width="50px">  |
 
 
-## Tokenization
+## Usage
 
-SignWriting can be tokenized using
-the [SignWriting Tokenizer](https://github.com/sign-language-processing/signwriting/tree/main/signwriting/tokenizer).
+#### Installation
+```shell
+conda create --name=multimodalhugs python=3.11 -y 
+conda activate multimodalhugs
+cd ~/sign-language/signwriting-transcription
+pip install .
+```
+
+#### Data Preparation
+
+```shell
+sbatch ./platforms/slurm/prepare_data.sh
+# Writing /scratch/amoryo/tmp/signwriting-transcription/data.train.tsv
+# Writing /scratch/amoryo/tmp/signwriting-transcription/data.dev.tsv
+# Writing /scratch/amoryo/tmp/signwriting-transcription/data.test.tsv
+# Writing /scratch/amoryo/tmp/signwriting-transcription/data.tokens.txt
+```
+
+#### Training
+
+```shell
+sbatch ./platforms/slurm/train.sh
+```
+
+## Implementations
+
+- [main](https://github.com/sign-language-processing/signwriting-transcription/tree/main) - Latest implementation using HuggingFace.
+- [v1.0.0](https://github.com/sign-language-processing/signwriting-transcription/tree/1.0.0) - Custom JoeyNMT implementation.

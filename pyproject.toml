@@ -3,48 +3,32 @@ name = "signwriting-transcription"
 description = "Transcribe single signs into SignWriting"
 version = "0.0.1"
 authors = [
-    { name = "Amit Moryossef", email = "amitmoryossef@gmail.com" },
-    { name = "Rotem Zolbermn", email = "rotemzil2203@gmail.com" },
-    { name = "Ohad Langer", email = "ohadlanger1@gmail.com" }
+    { name = "Amit Moryossef", email = "amit@sign.mt" },
 ]
 readme = "README.md"
 dependencies = [
     "tqdm",
+    "pandas",
     # Loading and processing poses
     "pose-format",
     "mediapipe",
     # SignWriting essentials
     "signwriting @ git+https://github.com/sign-language-processing/signwriting",
-    "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation.git",
+    "signwriting-evaluation @ git+https://github.com/sign-language-processing/signwriting-evaluation",
+    # Pose segmentation for data augmentation & cli tools
+    "sign_language_segmentation @ git+https://github.com/sign-language-processing/segmentation",
+    # Modeling
+    "multimodalhugs @ git+https://github.com/GerrySant/multimodalhugs",
     # CLI
     "pympi-ling", # Used for reading and writing ELAN files
 ]
 
 [project.optional-dependencies]
-pose_to_signwriting = [
-    "joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b", # Model framework
-    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git", # Used for normalization
-    "sentencepiece",
-    "pandas",
-     # Uploads results to Google Sheets
-    "google-auth-oauthlib",
-    "google-api-python-client",
-    "ruamel.yaml",
-    "synthetic-signwriting @ git+https://github.com/sign-language-processing/synthetic-signwriting.git",
-    "pose-anonymization @ git+https://github.com/sign-language-processing/pose-anonymization.git",
-]
-pose_to_vq_to_signwriting = [
-    "sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git" # Used for getting codes from poses
-]
-
 dev = [
     "pytest",
-    "pylint"
+    "pylint",
+    "ruff"
 ]
-
-[tool.poetry.extras]
-pose_to_signwriting = ["joeynmt @ git+https://github.com/may-/joeys2t.git@4532e8b9b990c8a3c4ccfe9fbd141bddc6d8637b"]
-pose_to_vq_to_signwriting = ["sign-vq @ git+https://github.com/sign-language-processing/sign-vq.git"]
 
 [tool.yapf]
 based_on_style = "google"
@@ -62,15 +46,32 @@ good-names = ["ms"]
 [tool.setuptools]
 packages = [
     "signwriting_transcription",
-    "signwriting_transcription.pose_to_signwriting",
-    "signwriting_transcription.pose_to_signwriting.data",
-    "signwriting_transcription.pose_to_signwriting.joeynmt_pose",
-    "signwriting_transcription.pose_to_vq_to_signwriting"
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings  
+    "F",    # pyflakes
+    "C90",  # mccabe complexity
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "PT",   # flake8-pytest-style
+    "W605", # invalid escape sequence
+    "BLE",  # flake8-blind-except
+    "TRY",  # tryceratops
 ]
 
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = ["signwriting_transcription"]
 
+# TODO: Add a script to run the inference
 [project.scripts]
 pose_to_signwriting = "signwriting_transcription.pose_to_signwriting.bin:main"

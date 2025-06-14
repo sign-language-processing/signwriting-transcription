@@ -1,0 +1,62 @@
+# Configuration file for training with the multimodalhugs framework.
+# This file contains settings for the model, common experiment parameters,
+# training hyperparameters, and dataset/data loading options.
+
+model:
+  # Model-specific settings:
+  type: "multimodal_embedder"
+  multimodal_mapper_type: "linear"                                # Type of visual-language mapper (e.g., "linear" or "adapter").
+  multimodal_mapper_layer_norm_before: true                       # Whether to apply Layer Normalization before the VL mapper.
+  multimodal_mapper_dropout: 0.1                                  # Dropout probability for the VL mapper to prevent overfitting.
+  backbone_type: "t5"                                     # Identifier for the pretrained backbone (e.g., "m2m100").
+  pretrained_backbone: "google/byt5-small"                # Weights or checkpoint identifier for the pretrained backbone.
+  feat_dim: 534                                           # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
+  max_length: 512
+
+training:
+  run_name: "signwriting_transcription_model"           # The name or identifier of the model configuration.
+  output_dir: "example/results"                   # Directory where model checkpoints and final results will be saved.
+  logging_dir: "example/logs"              # Directory to store training logs.
+  do_train: True                                   # Whether to run training.
+  do_eval: True                                    # Whether to run evaluation on the validation set.
+  predict_with_generate: True                      # Use generate to compute generative metrics.
+  overwrite_output_dir: True                       # Do not overwrite the output directory if it exists.
+  save_strategy: "steps"                           # Checkpoint save strategy during training.
+  eval_strategy: "steps"                     # Evaluation strategy ("steps" or "epoch").
+  eval_on_start: True # Make sure metrics work, by evaluating on start
+  eval_steps: 512                                  # Number of training steps between evaluations.
+  logging_steps: 32                               # Interval (in steps) at which training metrics are logged.
+  save_steps: 512                                  # Interval (in steps) at which model checkpoints are saved.
+  per_device_train_batch_size: 64                  # Batch size per device during training.
+  per_device_eval_batch_size: 64                   # Batch size per device for evaluation.
+  auto_find_batch_size: True                       # Automatically find the optimal batch size.
+  gradient_accumulation_steps: 1                   # Number of steps to accumulate gradients before weight updates.
+  learning_rate: 3e-4                             # Initial learning rate for the optimizer.
+  load_best_model_at_end: True                     # Load the best model found during training at the end.
+  dataloader_num_workers: 16                        # Number of subprocesses to use for data loading; higher values speed up data loading but increase memory usage.
+  dataloader_prefetch_factor: 4                    # Number of batches loaded in advance by each worker; total prefetched batches = num_workers * prefetch_factor.
+  metric_name: "sacrebleu,chrf,sign/signwriting_similarity"                         # Name of the metric to use (any metric supported by evaluate.load()). If you want to use multiple metrics, structure the variable like: metric_name: '<metric_name_1>,<metric_name_2>,...'
+  metric_for_best_model: "sign/signwriting_similarity"                    #  Metric used to determine the best model.
+  weight_decay: 0.01                                  # Weight decay factor (L2 regularization).
+  adam_beta1: 0.9                                  # Beta1 parameter for the Adam optimizer.
+  adam_beta2: 0.998                                # Beta2 parameter for the Adam optimizer.
+  max_grad_norm: 0.0                               # Maximum gradient norm for clipping (0 means no clipping).
+  num_train_epochs: 20                              # Number of full passes through the training dataset.
+  max_steps: 500000                                # Maximum number of training steps (overrides num_train_epochs if set).
+  lr_scheduler_type: "cosine"                # Type of learning rate scheduler.
+  warmup_steps: 8000                               # Number of warmup steps to gradually increase the learning rate.
+  save_total_limit: 10                             # Maximum number of checkpoints to retain (older ones are deleted).
+  seed: 3435                                       # Random seed for reproducibility.
+  dataloader_drop_last: false                      # Drop the last incomplete batch in the dataloader.
+  bf16: True                                       # Enable mixed-precision (FP16) training for faster computation.
+  # See the list of allowed arguments in https://huggingface.co/docs/transformers/v4.49.0/en/main_classes/trainer#transformers.Seq2SeqTrainingArguments
+
+data:
+  # Dataset and preprocessing settings:
+  train_metadata_file: "example/data/data.train.tsv"                                                                       # Path to the training metadata file (e.g., TSV format).
+  validation_metadata_file: "example/data/data.dev.tsv"                                                             # Path to the validation metadata file.
+  test_metadata_file: "example/data/data.test.tsv"                                                                         # Path to the test metadata file.
+  shuffle: True                                                                                                                # Shuffle the dataset samples during loading.
+  new_vocabulary: "example/data/data.tokens.txt"          # Path to the file listing the source languages for the tokenizer.
+  text_tokenizer_path: "google/byt5-small"                                                                                     # Path or identifier for the pretrained text tokenizer (e.g., "facebook/m2m100_418M").  max_seq_length: 512                                                                                                          # Maximum number of tokens allowed in a sequence for tokenization/generation.
+  max_frames: 512
