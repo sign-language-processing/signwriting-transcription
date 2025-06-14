@@ -1,17 +1,13 @@
 name: Overfit Test
 
 
-on:
-  push:
-    branches: [ master, main ]
-  pull_request:
-    branches: [ master, main ]
+on: workflow_dispatch
 
 
 jobs:
   test:
     name: Overfit Test
-    runs-on: ubuntu-latest
+    runs-on: gpu-t4-4cpu
 
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +15,9 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
+
+      - name: Verify GPU
+        run: nvidia-smi
 
       - name: Install Requirements
         run: pip install ".[dev]"
