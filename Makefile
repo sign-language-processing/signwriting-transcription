@@ -10,6 +10,14 @@ OUTPUT_DIR ?= $(PWD)/results
 
 DATA_CSV ?= $(DATA_DIR)/data.csv
 
+ifeq ($(firstword $(MAKECMDGOALS)),overfit)
+CONFIG_FILE := example/overfit_config.yaml
+DATA_DIR := example/data
+POSES_DIR := example/poses
+OUTPUT_DIR := example/results
+DATA_CSV := example/data.csv
+endif
+
 # Model settings
 WANDB_PROJECT := mmh_transcription_local
 
@@ -25,7 +33,7 @@ help:
 
 # ----------------------------------------------------------
 
-.PHONY: prepare train train-overfit
+.PHONY: prepare train overfit
 
 $(DATA_DIR):
 	mkdir -p $(DATA_DIR)
@@ -80,7 +88,7 @@ prepare: $(OUTPUT_DIR)/config.yaml $(TRANSFORM_STAMP)
 	multimodalhugs-setup --modality "pose2text" --config_path "$(OUTPUT_DIR)/config.yaml"
 
 ## Train the model
-train: prepare
+train:
 	huggingface-cli login --token "$(HUGGINGFACE_TOKEN)"
 
 	# Train the model
@@ -109,11 +117,8 @@ example/overfit_config.yaml: signwriting_transcription/config.yaml
 	  -e 's/eval_on_start: True/eval_on_start: False/' \
 	  "signwriting_transcription/config.yaml" > "$@"
 
-## Train with small dataset for overfitting test
-train-overfit: example/overfit_config.yaml
-	@echo "Training with overfitting test..."
+overfit: example/overfit_config.yaml
 	wandb offline
-	@$(MAKE) train DATA_DIR=example/data POSES_DIR=example/poses OUTPUT_DIR=example/results DATA_CSV=example/data.csv CONFIG_FILE=example/overfit_config.yaml
 
 # Docker commands (platform-agnostic)
 .PHONY: docker-build docker-run docker-shell

@@ -15,17 +15,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install Requirements
         run: pip install ".[dev]"
 
-      - name: Train model to overfit
-        run: make train-overfit
+      - name: Prepare data and model
+        run: make overfit prepare
 
-      # Look at example/results/trainer_state.json "best_metric" should be above 0.7
+      - name: Train model to overfit
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: make overfit train
+
       - name: Test Overfitting
         run: |
           if jq -e '.best_metric > 0.7' example/results/trainer_state.json > /dev/null; then

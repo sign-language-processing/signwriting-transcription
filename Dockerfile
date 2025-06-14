@@ -20,4 +20,4 @@ RUN pip install -e .[dev]
 COPY . /workspace/
 
 # Entry point to process data and train the model
-CMD ["make train"]
+CMD ["make prepare && make train"]
